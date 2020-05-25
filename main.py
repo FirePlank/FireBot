@@ -3,12 +3,11 @@ import os
 from discord.ext import commands
 
 client = commands.Bot(command_prefix = '.')
-
+client.remove_command('help')
 
 @client.event
 async def on_ready():
-    await client.change_presence(activity=discord.Game("📙Reading About Quantum Physics"))
-    print("Ready...")
+    await client.change_presence(activity=discord.Game(".help"))
 
 @client.event
 async def on_command_error(ctx, error):
@@ -22,15 +21,6 @@ async def on_command_error(ctx, error):
         await ctx.send("Sorry. You don't have the permission for that command.")
 
     else: await ctx.send(error)
-
-
-@client.command()
-async def load(extension):
-    client.load_extension(f"cogs.{extension}")
-
-@client.command()
-async def unload(extension):
-    client.unload_extension(f"cogs.{extension}")
 
 
 for filename in os.listdir('./cogs'):
