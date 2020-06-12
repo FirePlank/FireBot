@@ -29,6 +29,15 @@ class Fun(commands.Cog):
                  "Approximately 10-20% of U.S. power outages are caused by squirrels."
                 ]
 
+        fact_file = open("/app/cogs/facts.txt", mode="r", encoding="utf8")
+        fact_file_facts = fact_file.read().split("\n")
+        fact_file.close()
+
+        for i in fact_file_facts:
+            if i == "": fact_file_facts.remove(i)
+
+        facts = facts + fact_file_facts
+
         await ctx.send(start + random.choice(facts).lower())
 
 
