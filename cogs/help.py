@@ -22,7 +22,7 @@ class Helpful(commands.Cog):
         embed.add_field(name=".ban", value="Bans the specified person. Reason is optional", inline=False)
         embed.add_field(name=".unban", value="Unbans the specified person. Reason is optional", inline=False)
         embed.add_field(name=".kick", value="Kicks the specified person. Reason is optional", inline=False)
-        embed.add_field(name=".load", value="Loads an command so it can be used by anyone until unloaded. Note: all commands are automatically loaded when starting the bot", inline=False)
+        embed.add_field(name=".load", value="Loads an command so it can be used by anyone who has the right privileges until unloaded. Note: all commands are automatically loaded when starting the bot", inline=False)
         embed.add_field(name=".unload", value="Unloads an command so it can no longer be used by anyone until reloaded", inline=False)
 
 
