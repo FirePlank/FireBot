@@ -2,12 +2,12 @@ import discord
 import os
 from discord.ext import commands
 
-client = commands.Bot(command_prefix = '.')
+client = commands.Bot(command_prefix = 'f.')
 client.remove_command('help')
 
 @client.event
 async def on_ready():
-    await client.change_presence(activity=discord.Game(".help"))
+    await client.change_presence(activity=discord.Game("f.help"))
 
 @client.event
 async def on_command_error(ctx, error):
@@ -28,4 +28,4 @@ for filename in os.listdir('./cogs'):
         client.load_extension(f"cogs.{filename[:-3]}")
 
 
-client.run('NzEzNzg5NTI2MDc3NjAzODUw.XslPeg.GYEkTwtwKL3yuG2TJKVL2pF3hFE')
+client.run(open("key.txt", "r").read())
