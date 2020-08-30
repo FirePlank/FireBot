@@ -28,4 +28,4 @@ for filename in os.listdir('./cogs'):
         client.load_extension(f"cogs.{filename[:-3]}")
 
 
-client.run(open("key.txt", "r").read())
+client.run("Add your TOKEN you bitch!")
