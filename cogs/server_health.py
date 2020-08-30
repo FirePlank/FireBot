@@ -12,7 +12,7 @@ class Helpful(commands.Cog):
         if not channel:
             channel = ctx.channel
 
-        server_id = self.client.get_guild(567249262581121024)
+        server_id = self.client.get_guild(self.client.guilds[0].id)
 
         embed = discord.Embed(colour=discord.Colour.orange())
         embed.set_author(name="Channel Health:")
