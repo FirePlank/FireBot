@@ -3,6 +3,7 @@ import random
 from discord.ext import commands
 
 
+
 class Fun(commands.Cog):
 
     def __init__(self, client):
@@ -31,7 +32,10 @@ class Fun(commands.Cog):
                     'Very doubtful',
                     'No']
 
-        await ctx.send(f"Question: {question}\nAnswer: {random.choice(responses)}")
+        message = discord.Embed(title="8 Ball", colour=discord.Colour.orange())
+        message.add_field(name="Question:", value=question, inline=False)
+        message.add_field(name="Answer:", value=random.choice(responses), inline=False)
+        await ctx.send(embed=message)
 
 
 def setup(client):
