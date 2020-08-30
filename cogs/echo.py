@@ -7,7 +7,7 @@ class Fun(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.command()
+    @commands.command(aliases=['mimic', 'paste', 'say'])
     async def echo(self, ctx, *, sentence):
         await ctx.send(sentence)
 
