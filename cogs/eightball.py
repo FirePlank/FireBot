@@ -33,8 +33,8 @@ class Fun(commands.Cog):
                     'No']
 
         message = discord.Embed(title="8 Ball", colour=discord.Colour.orange())
-        message.add_field(name="Question", value=question, inline=False)
-        message.add_field(name="Answer", value=random.choice(responses), inline=False)
+        message.add_field(name="Question:", value=question, inline=False)
+        message.add_field(name="Answer:", value=random.choice(responses), inline=False)
         await ctx.send(embed=message)
 
 
