@@ -52,3 +52,4 @@ docs/_build/
 # Custom .gitignore files
 Procfile
 key.txt
+HEROKU/
