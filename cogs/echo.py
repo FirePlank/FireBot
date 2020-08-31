@@ -9,7 +9,10 @@ class Fun(commands.Cog):
 
     @commands.command(aliases=['mimic', 'paste', 'say'])
     async def echo(self, ctx, *, sentence):
-        await ctx.send(sentence)
+        if "@everyone" in sentence or "@here" in sentence:
+            await ctx.send(f"I'm sorry {ctx.author.mention}, but I don't want to say those things.")
+        else:
+            await ctx.send(sentence)
 
 
 def setup(client):
