@@ -26,14 +26,18 @@ class Helpful(commands.Cog):
                 healthiness = "VERY HEALTHY"
 
             else:
-                average = round(count / 100, 2)
+                try:
+                    average = round(count / 100, 2)
 
-                if 0 > server_id.member_count / average: healthiness = "VERY HEALTHY"
-                elif server_id.member_count / average <= 5: healthiness = "HEALTHY"
-                elif server_id.member_count / average <= 10: healthiness = "NORMAL"
-                elif server_id.member_count / average <= 20: healthiness = "UNHEALTHY"
-                else: healthiness = "VERY UNHEALTHY"
+                    if 0 > server_id.member_count / average: healthiness = "VERY HEALTHY"
+                    elif server_id.member_count / average <= 5: healthiness = "HEALTHY"
+                    elif server_id.member_count / average <= 10: healthiness = "NORMAL"
+                    elif server_id.member_count / average <= 20: healthiness = "UNHEALTHY"
+                    else: healthiness = "VERY UNHEALTHY"
 
+                except ZeroDivisionError:
+                    average = 0
+                    healthiness = "VERY UNHEALTHY"
 
             embed.add_field(name="­", value=f"# of members: {server_id.member_count}", inline=False)
             embed.add_field(name="­", value=f'# of messages per day on average in "{channel}" is: {average}', inline=False)
