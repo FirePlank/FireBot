@@ -1,5 +1,6 @@
 import discord
 import os
+import re
 from discord.ext import commands
 
 client = commands.Bot(command_prefix = 'f.')
@@ -58,12 +59,20 @@ async def on_message_edit(before, after):
 
 @client.event
 async def on_message(message):
-    if "discord.gg" in message.content:
+    channel = message.channel
+    if str(channel) == "logs": return
+    REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
+    links = REGEX.findall(message.content)
+    if links:
         channel = client.get_channel(741011181484900464)
         staff = discord.utils.get(message.guild.roles, id=749953613773930497)
-        link = f"https://discordapp.com/channels/{message.guild.id}/{message.channel.id}/{message.id}"
 
-        await channel.send(f"{staff.mention}\n__**A discord link has been detected!**__\nSender: {message.author.mention}\nLink to msg: {link}")
+        embed = discord.Embed(colour=discord.Colour.red())
+
+        embed.add_field(name=f'__**A discord link has been detected!**__', value=f"Sender: <@{message.author.id}>", inline=False)
+        embed.add_field(name=f"Msg: {message.content}", value=f"Link to msg: {message.jump_url}", inline=False)
+        embed.set_footer(text=f"ID: {message.author.id}")
+        await channel.send(staff.mention, embed=embed)
 
     await client.process_commands(message)
 
