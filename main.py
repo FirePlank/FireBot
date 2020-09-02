@@ -11,6 +11,63 @@ async def on_ready():
     print("READY!")
 
 @client.event
+async def on_message_delete(message):
+    author = message.author # Defines the message author
+    content = message.content # Defines the message content
+    channel = message.channel # Defines the message channel
+    if str(channel) == "logs": return
+    logchannel = client.get_channel(741011181484900464) #Defines the logs channel
+
+    embed = discord.Embed(colour=discord.Colour.purple())
+    embed.add_field(name="__**Message Delete:**__", value=f"Someone (Can be themselves) deleted {author.mention}'s message in the channel {channel.mention}")
+    embed.add_field(name=f'{author} said:', value=f'{content}')
+
+    await logchannel.send(embed=embed) # Send the message.
+
+@client.event
+async def on_bulk_message_delete(messages):
+    channel = messages[0].channel  # Defines the message channel
+    if str(channel) == "logs": return
+    logchannel = client.get_channel(741011181484900464)  # Defines the logs channel
+
+    embed = discord.Embed(colour=discord.Colour.dark_purple())
+    embed.add_field(name="__**Bulk Message Delete:**__", value=f"Channel: {channel.mention}")
+    for msg in messages:
+        author = msg.author # Defines the message author
+        content = msg.content # Defines the message content
+
+        embed.add_field(name=f"{author} said:", value=content, inline=False)
+
+    await logchannel.send(embed=embed) # Send the message.
+
+@client.event
+async def on_message_edit(before, after):
+    channel = before.channel  # Defines the message channel
+    if str(channel) == "logs": return
+    author = before.author  # Defines the message author
+    if author.bot: return
+    old_content = before.content  # Defines the old message content
+    new_content = after.content # Defines the new message content
+    logchannel = client.get_channel(741011181484900464)  # Defines the logs channel
+
+    embed = discord.Embed(colour=discord.Colour.blurple())
+    embed.add_field(name="__**Message Edit:**__", value=f"{author.mention} edited their message in the channel {channel.mention}")
+    embed.add_field(name=f'{author} said:\n{old_content}', value=f'Now:\n{new_content}')
+
+    await logchannel.send(embed=embed)  # Send the message.
+
+@client.event
+async def on_message(message):
+    if "discord.gg" in message.content:
+        channel = client.get_channel(741011181484900464)
+        staff = discord.utils.get(message.guild.roles, id=749953613773930497)
+        link = f"https://discordapp.com/channels/{message.guild.id}/{message.channel.id}/{message.id}"
+
+        await channel.send(f"{staff.mention}\n__**A discord link has been detected!**__\nSender: {message.author.mention}\nLink to msg: {link}")
+
+    await client.process_commands(message)
+
+@client.event
 async def on_command_error(ctx, error):
     if isinstance(error, discord.ext.commands.errors.CommandNotFound):
         await ctx.send("The command you specified was not found. Type f.help to see all available commands.")

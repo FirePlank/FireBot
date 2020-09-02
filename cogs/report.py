@@ -15,7 +15,7 @@ class AdminCommands(commands.Cog):
         channel = self.client.get_channel(741011181484900464)
         staff = discord.utils.get(ctx.guild.roles, id=749953613773930497)
 
-        embed = discord.Embed(colour=discord.Colour.orange())
+        embed = discord.Embed(colour=discord.Colour.from_rgb(255,255,0))
 
         embed.add_field(name=f'__**Report:**__', value=f"<@{ctx.author.id}> Reported:", inline=False)
         embed.add_field(name=msg, value="­")
