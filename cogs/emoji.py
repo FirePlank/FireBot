@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 import requests
+from bs4 import BeautifulSoup as bs
+import random
 
 
 
@@ -11,48 +13,34 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def emoji(self, ctx, *, message):
-        emoji_name = message.split()
-        emoji_name = '_'.join(emoji_name)
-        url = 'https://emoji.gg/assets/emoji/missingping.png'
+        URL = f"https://slackmojis.com/emojis/search?utf8=%E2%9C%93&authenticity_token=8OgBpTphVqlDDugOXU6J6IBtDdXBCdtVhg3VDCEHCTdTt7TSn5vQNha%2BoJkhDbmGkow8Tvk8d%2FiBmanqQeP%2Bdg%3D%3D&query={message}"
+        response = requests.get(URL)
 
-        try:
-            emojis = requests.get('https://emoji.gg/api/').json()
-            for emoji in emojis:
-                catagory = emoji['category']
-                if emoji_name.lower() in emoji['title'].lower() and catagory != 9:
-                    url = emoji['image']
-                    url = url.replace('discordemoji.com', 'emoji.gg')
-                    print(emoji['image'])
-                    break
-            
-        except Exception as e:
-            print(e)
 
-        await ctx.send(url)
+        if response.status_code == 200:
+            soup = bs(response.text)
+            images = []
 
-    @commands.command()
-    async def emoji_id(self, ctx, *, message):
-        emoji_id = message.split()
-        if len(emoji_id) != 1:
-            message = discord.Embed(title="Wrong ID", description=f"The given ID {' '.join(emoji_id)} is not correct")
-            await ctx.send(embed=message)
+            for img in soup.find_all('img'):
+                images.append(img['src'])
+
+            if len(images) != 0 and not nsfw_check(images):
+                await ctx.send(random.choice(images))
+            else:
+                await ctx.send("Sorry, nothing for you boomer!")
         else:
-            try:
-                emoji_id = int(emoji_id[0])
-                url = 'https://emoji.gg/assets/emoji/missingping.png'
-                try:
-                    emojis = requests.get('https://emoji.gg/api/').json()
-                    for emoji in emojis:
-                        if emoji['id'] == emoji_id:
-                            url = emoji['image'].replace('discordemoji.com', 'emoji.gg')
-                            break
-                    await ctx.send(url)
-                except:
-                    pass
-
-            except:
-                await ctx.send(embed=message)
+            await ctx.send("Sorry, nothign for you boomer!")
 
 
 def setup(client):
     client.add_cog(Fun(client))
+
+def nsfw_check(images):
+    nsfw_links = {'https://emojis.slackmojis.com/emojis/images/1528400660/4042/boob.png?1528400660',
+                  'https://emojis.slackmojis.com/emojis/images/1533408970/4386/dildo.png?1533408970',
+    }
+
+    images = set(images)
+    common = nsfw_links.intersection(images)
+    if len(common) != 0: return True
+    else: return False
