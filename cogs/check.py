@@ -3,13 +3,12 @@ from discord.ext import commands
 from datetime import datetime, timedelta
 
 
-class AdminCommands(commands.Cog):
+class Helpful(commands.Cog):
 
     def __init__(self, client):
         self.client = client
 
     @commands.command(aliases=["stats", "activity", "messages"])
-    @commands.has_permissions(manage_messages=True)
     async def check(self, ctx, timeframe=7, channel: discord.TextChannel = None, *, user: discord.Member = None):
         if timeframe > 1968:
             await ctx.channel.send("Sorry. The maximum of days you can check is 1968.")
@@ -40,4 +39,4 @@ class AdminCommands(commands.Cog):
 
 
 def setup(client):
-    client.add_cog(AdminCommands(client))
+    client.add_cog(Helpful(client))

@@ -21,7 +21,8 @@ async def on_message_delete(message):
 
     embed = discord.Embed(colour=discord.Colour.purple())
     embed.add_field(name="__**Message Delete:**__", value=f"Someone (Can be themselves) deleted {author.mention}'s message in the channel {channel.mention}")
-    embed.add_field(name=f'{author} said:', value=f'{content}')
+    if message.embeds: embed.add_field(name=f"{author} said an embed:", value="__THIS IS SUPPOSED TO BE AN EMBED__")
+    else: embed.add_field(name=f'{author} said:', value=f'{content}')
 
     await logchannel.send(embed=embed) # Send the message.
 
@@ -37,7 +38,8 @@ async def on_bulk_message_delete(messages):
         author = msg.author # Defines the message author
         content = msg.content # Defines the message content
 
-        embed.add_field(name=f"{author} said:", value=content, inline=False)
+        if msg.embeds: embed.add_field(name=f"{author} said an embed:", value="**__THIS IS AN EMBED__**", inline=False)
+        else: embed.add_field(name=f"{author} said:", value=content, inline=False)
 
     await logchannel.send(embed=embed) # Send the message.
 
@@ -49,16 +51,18 @@ async def on_message_edit(before, after):
     if author.bot: return
     old_content = before.content  # Defines the old message content
     new_content = after.content # Defines the new message content
+    if old_content == new_content: return
     logchannel = client.get_channel(741011181484900464)  # Defines the logs channel
 
     embed = discord.Embed(colour=discord.Colour.blurple())
     embed.add_field(name="__**Message Edit:**__", value=f"{author.mention} edited their message in the channel {channel.mention}")
-    embed.add_field(name=f'{author} said:\n{old_content}', value=f'Now:\n{new_content}')
+    embed.add_field(name=f'{author} said:', value=f'{old_content}\nNow:\n{new_content}')
 
     await logchannel.send(embed=embed)  # Send the message.
 
 @client.event
 async def on_message(message):
+    await client.process_commands(message)
     channel = message.channel
     if str(channel) == "logs": return
     REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
@@ -73,8 +77,6 @@ async def on_message(message):
         embed.add_field(name=f"Msg: {message.content}", value=f"Link to msg: {message.jump_url}", inline=False)
         embed.set_footer(text=f"ID: {message.author.id}")
         await channel.send(staff.mention, embed=embed)
-
-    await client.process_commands(message)
 
 @client.event
 async def on_command_error(ctx, error):
