@@ -1,6 +1,8 @@
 import discord
 import os
 import re
+import sqlite3
+import datetime
 from discord.ext import commands
 
 client = commands.Bot(command_prefix = 'f.')
@@ -12,71 +14,18 @@ async def on_ready():
     print("READY!")
 
 @client.event
-async def on_message_delete(message):
-    author = message.author # Defines the message author
-    content = message.content # Defines the message content
-    channel = message.channel # Defines the message channel
-    if str(channel) == "logs": return
-    logchannel = client.get_channel(741011181484900464) #Defines the logs channel
+async def on_member_join(member):
+    embed = discord.Embed(colour=discord.Colour.green(), description=f"""Welcome to {member.guild.name}, {member.mention}! You are the {len(list(member.guild.members))} member to join!
 
-    embed = discord.Embed(colour=discord.Colour.purple())
-    embed.add_field(name="__**Message Delete:**__", value=f"Someone (Can be themselves) deleted {author.mention}'s message in the channel {channel.mention}")
-    if message.embeds: embed.add_field(name=f"{author} said an embed:", value="__THIS IS SUPPOSED TO BE AN EMBED__")
-    else: embed.add_field(name=f'{author} said:', value=f'{content}')
+We are a great programming community wanting to help people in need.
 
-    await logchannel.send(embed=embed) # Send the message.
+Thank you for contributing to the server by joining and we hope you enjoy your time here!""")
 
-@client.event
-async def on_bulk_message_delete(messages):
-    channel = messages[0].channel  # Defines the message channel
-    if str(channel) == "logs": return
-    logchannel = client.get_channel(741011181484900464)  # Defines the logs channel
+    embed.set_author(name=member.name, icon_url=member.avatar_url)
+    embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)
+    embed.timestamp = datetime.datetime.utcnow()
 
-    embed = discord.Embed(colour=discord.Colour.dark_purple())
-    embed.add_field(name="__**Bulk Message Delete:**__", value=f"Channel: {channel.mention}")
-    for msg in messages:
-        author = msg.author # Defines the message author
-        content = msg.content # Defines the message content
-
-        if msg.embeds: embed.add_field(name=f"{author} said an embed:", value="**__THIS IS AN EMBED__**", inline=False)
-        else: embed.add_field(name=f"{author} said:", value=content, inline=False)
-
-    await logchannel.send(embed=embed) # Send the message.
-
-@client.event
-async def on_message_edit(before, after):
-    channel = before.channel  # Defines the message channel
-    if str(channel) == "logs": return
-    author = before.author  # Defines the message author
-    if author.bot: return
-    old_content = before.content  # Defines the old message content
-    new_content = after.content # Defines the new message content
-    if old_content == new_content: return
-    logchannel = client.get_channel(741011181484900464)  # Defines the logs channel
-
-    embed = discord.Embed(colour=discord.Colour.blurple())
-    embed.add_field(name="__**Message Edit:**__", value=f"{author.mention} edited their message in the channel {channel.mention}")
-    embed.add_field(name=f'{author} said:', value=f'{old_content}\nNow:\n{new_content}')
-
-    await logchannel.send(embed=embed)  # Send the message.
-
-@client.event
-async def on_message(message):
-    await client.process_commands(message)
-    channel = message.channel
-    if str(channel) == "logs": return
-    REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
-    links = REGEX.findall(message.content)
-    if links:
-        channel = client.get_channel(741011181484900464)
-        staff = discord.utils.get(message.guild.roles, id=749953613773930497)
-
-        embed = discord.Embed(colour=discord.Colour.red())
-
-        embed.add_field(name=f'__**A discord link has been detected!**__', value=f"Sender: <@{message.author.id}>", inline=False)
-        embed.add_field(name=f"Msg: {message.content}", value=f"Link to msg: {message.jump_url}", inline=False)
-        embed.set_footer(text=f"ID: {message.author.id}")
-        await channel.send(staff.mention, embed=embed)
+    await client.get_channel(id=749315830734520361).send(embed=embed)
 
 @client.event
 async def on_command_error(ctx, error):
