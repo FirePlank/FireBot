@@ -1,8 +1,6 @@
 import discord
 import os
-import re
 import sqlite3
-import datetime
 from discord.ext import commands
 
 client = commands.Bot(command_prefix = 'f.')
@@ -12,20 +10,6 @@ client.remove_command('help')
 async def on_ready():
     await client.change_presence(activity=discord.Game("f.help"))
     print("READY!")
-
-@client.event
-async def on_member_join(member):
-    embed = discord.Embed(colour=discord.Colour.green(), description=f"""Welcome to {member.guild.name}, {member.mention}! You are the {len(list(member.guild.members))} member to join!
-
-We are a great programming community wanting to help people in need.
-
-Thank you for contributing to the server by joining and we hope you enjoy your time here!""")
-
-    embed.set_author(name=member.name, icon_url=member.avatar_url)
-    embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)
-    embed.timestamp = datetime.datetime.utcnow()
-
-    await client.get_channel(id=749315830734520361).send(embed=embed)
 
 @client.event
 async def on_command_error(ctx, error):

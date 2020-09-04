@@ -58,7 +58,6 @@ class AdminCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        await self.client.process_commands(message)
         channel = message.channel
         if str(channel) == "logs": return
         REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
