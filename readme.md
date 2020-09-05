@@ -43,9 +43,12 @@ Feel free to grab a bug and squash it down. Or you can add a new feature if you 
 
 ### FirePlank
 ![FirePlank](https://avatars2.githubusercontent.com/u/44502537?s=64&v=4)
+
 This (mysterious) guy did all the mod commands and built the backbone of the bot.
 
 ### Muhimen123
+![Muhimen](https://avatars2.githubusercontent.com/u/44261822?s=60&v=4)
+
 Person behind few of the fun commands (and bug killing)
 
 ## Join us
