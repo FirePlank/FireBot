@@ -43,19 +43,20 @@ class Helpful(commands.Cog):
         embed.add_field(name="f.8ball <question> / f.magicball / f.eightball / f.enlightenme", value="Ask a question and the magic eight ball will answer you", inline=False)
         embed.add_field(name="f.echo <message> / f.mimic / f.paste / f.say", value="Says what you say to it", inline=False)
         embed.add_field(name="f.fact", value="Tells a random fact", inline=False)
-        embed.add_field(name="f.emoji <emoji>", value="Returns an appropriate emoji based on your search", inline=False)
+        embed.add_field(name="f.emoji <emoji>", value="Returns an appropriate(but random) emoji based on your search", inline=False)
 
         await ctx.send(embed=embed)
 
     @help.command()
-    async def useful(self, ctx):
+    async def helpful(self, ctx):
         embed = discord.Embed(colour=discord.Colour.orange())
 
-        embed.set_author(name="Useful Commands", icon_url=self.client.user.avatar_url)
+        embed.set_author(name="Helpful Commands", icon_url=self.client.user.avatar_url)
         embed.add_field(name="f.ping", value="Returns the bot's current ping", inline=False)
         embed.add_field(name="f.channel_status <channel (optional)> / f.channel_health / f.channel_info", value="Tells the channels health", inline=False)
         embed.add_field(name="f.report <msg>", value="Reports a msg to staff about rule breakers etc.", inline=False)
         embed.add_field(name="f.check <timeframe (optional)> <channel (optional)> <user (optional)> / f.stats / f.activity / f.messages", value="Shows the amount of messages the specified user has sent on the specified channel in the specified timeframe", inline=False)
+        embed.add_field(name="f.av <mention user (optional)>", value="Shows the avatar the of the mentioned user. If no one is mentioned, the avatar of the author is returned. ", inline=False)
 
         await ctx.send(embed=embed)
 
