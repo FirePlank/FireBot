@@ -54,6 +54,6 @@ Person behind few of the fun commands (and bug killing)
 ## Join us
 Wanna see how the bot works? Wanna say hello to us? Come join our official discord server. 
 
-[Invitation link](https://discord.gg/EKDRddB)
+[Invitation link](hthttps://discord.gg/K2Cf6ma)
 
 Waiting for your arrival!
