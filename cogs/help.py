@@ -14,8 +14,8 @@ class Helpful(commands.Cog):
 
         embed.set_author(name="Help Commands", icon_url=self.client.user.avatar_url)
         embed.set_thumbnail(url=self.client.user.avatar_url)
-        embed.add_field(name="Fun", value="`f.help fun`")
-        embed.add_field(name="Helpful", value="`f.help helpful`")
+        embed.add_field(name="Fun", value="`f.help fun`", inline=False)
+        embed.add_field(name="Helpful", value="`f.help useful`", inline=False)
         embed.add_field(name="Moderation", value="`f.help moderation`", inline=False)
 
         await ctx.send(embed=embed)
