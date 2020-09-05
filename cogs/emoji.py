@@ -46,16 +46,21 @@ class Fun(commands.Cog):
                 images.append(img['src'])
                 title = img['alt'].replace(' random', '')
                 titles.append(title)
+                more_than_5 = True
 
             if not nsfw_check(images):
                 for i in range(5):
-                    message = discord.Embed(title=titles[i].title())
+                    message = discord.Embed(title=titles[i].title(), color=discord.Colour.orange())
                     message.set_image(url=images[i])
                     await ctx.send(embed=message)
 
-                await ctx.send(f"Type `f.emoji_list {search}` to get the full emoji list")
+                    if i == len(images) - 1:
+                        more_than_5 = False
+                        break
+                if more_than_5:
+                    await ctx.send(f"Type `f.emoji_list {search}` to get the full emoji list")
             else:
-                message = discord.Embed(title="CENSORED!")
+                message = discord.Embed(title="CENSORED!", color=discord.Colour.red())
                 await ctx.send(embed=message)
 
 
@@ -77,11 +82,11 @@ class Fun(commands.Cog):
                 titles.append(title)
 
             if not nsfw_check(images):
-                message = discord.Embed(title="Showing Emoji Search Result", color=int('34eba8', 16))
+                message = discord.Embed(title="Showing Emoji Search Result", color=discord.Colour.orange())
                 message.add_field(name=search.title(), value=", ".join(list(set(titles))))
                 
             else:
-                message = discord.Embed(title="CENSORED!")
+                message = discord.Embed(title="CENSORED!", color=discord.Colour.red())
 
             await ctx.send(embed=message)
 
