@@ -14,8 +14,8 @@ class Helpful(commands.Cog):
 
         embed.set_author(name="Help Commands", icon_url=self.client.user.avatar_url)
         embed.set_thumbnail(url=self.client.user.avatar_url)
-        embed.add_field(name="Fun", value="`f.help fun`", inline=False)
-        embed.add_field(name="Helpful", value="`f.help useful`", inline=False)
+        embed.add_field(name="Fun", value="`f.help fun`")
+        embed.add_field(name="Helpful", value="`f.help useful`")
         embed.add_field(name="Moderation", value="`f.help moderation`", inline=False)
 
         await ctx.send(embed=embed)
@@ -48,10 +48,10 @@ class Helpful(commands.Cog):
         await ctx.send(embed=embed)
 
     @help.command()
-    async def useful(self, ctx):
+    async def helpful(self, ctx):
         embed = discord.Embed(colour=discord.Colour.orange())
 
-        embed.set_author(name="Useful Commands", icon_url=self.client.user.avatar_url)
+        embed.set_author(name="Helpful Commands", icon_url=self.client.user.avatar_url)
         embed.add_field(name="f.ping", value="Returns the bot's current ping", inline=False)
         embed.add_field(name="f.channel_status <channel (optional)> / f.channel_health / f.channel_info", value="Tells the channels health", inline=False)
         embed.add_field(name="f.report <msg>", value="Reports a msg to staff about rule breakers etc.", inline=False)
