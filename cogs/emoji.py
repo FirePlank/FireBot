@@ -16,7 +16,6 @@ class Fun(commands.Cog):
         URL = f"https://slackmojis.com/emojis/search?utf8=%E2%9C%93&authenticity_token=8OgBpTphVqlDDugOXU6J6IBtDdXBCdtVhg3VDCEHCTdTt7TSn5vQNha%2BoJkhDbmGkow8Tvk8d%2FiBmanqQeP%2Bdg%3D%3D&query={message}"
         response = requests.get(URL)
 
-
         if response.status_code == 200:
             soup = bs(response.text)
             images = []
@@ -31,6 +30,66 @@ class Fun(commands.Cog):
         else:
             await ctx.send("Sorry, nothign for you boomer!")
 
+
+    @commands.command()
+    async def emoji_search(self, ctx, *, search):
+        URL = f"https://slackmojis.com/emojis/search?utf8=%E2%9C%93&authenticity_token=8OgBpTphVqlDDugOXU6J6IBtDdXBCdtVhg3VDCEHCTdTt7TSn5vQNha%2BoJkhDbmGkow8Tvk8d%2FiBmanqQeP%2Bdg%3D%3D&query={search}"
+        response = requests.get(URL)
+
+        if response.status_code == 200:
+            soup = bs(response.text)
+
+            images = []
+            titles = []
+
+            for img in soup.find_all('img'):
+                images.append(img['src'])
+                title = img['alt'].replace(' random', '')
+                titles.append(title)
+                more_than_5 = True
+
+            if not nsfw_check(images):
+                for i in range(5):
+                    message = discord.Embed(title=titles[i].title(), color=discord.Colour.orange())
+                    message.set_image(url=images[i])
+                    await ctx.send(embed=message)
+
+                    if i == len(images) - 1:
+                        more_than_5 = False
+                        break
+
+                if more_than_5:
+                    await ctx.send(f"Type `f.emoji_list {search}` to get the full emoji list")
+            else:
+                message = discord.Embed(title="CENSORED!", color=discord.Colour.red())
+                await ctx.send(embed=message)
+
+
+    @commands.command()
+    async def emoji_list(self, ctx, *, search):
+        URL = f"https://slackmojis.com/emojis/search?utf8=%E2%9C%93&authenticity_token=8OgBpTphVqlDDugOXU6J6IBtDdXBCdtVhg3VDCEHCTdTt7TSn5vQNha%2BoJkhDbmGkow8Tvk8d%2FiBmanqQeP%2Bdg%3D%3D&query={search}"
+        response = requests.get(URL)
+
+        if response.status_code == 200:
+            soup = bs(response.text)
+            images = []
+            titles = []
+
+            common = "random"
+
+            for img in soup.find_all('img'):
+                images.append(img['src'])
+                title = img['alt'].replace(" random", '')
+                titles.append(title)
+
+            if not nsfw_check(images):
+                message = discord.Embed(title="Showing Emoji Search Result", color=discord.Colour.orange())
+                message.add_field(name=search.title(), value=", ".join(list(set(titles))))
+                
+            else:
+                message = discord.Embed(title="CENSORED!", color=discord.Colour.red())
+
+            await ctx.send(embed=message)
 
 def setup(client):
     client.add_cog(Fun(client))
