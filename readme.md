@@ -1,22 +1,20 @@
 # FireBot
 ### A simple yet quite powerful bot (which is always on 🔥)
 
-***
-
 ## Description
-Introducing **FireBot**! A simple discord bot made using [discord.py](https://discordpy.readthedocs.io/en/latest/index.html). But don't let the simplcity befool you. This single bot is capable of moderating a server single handedly. Yes, you heard me right!
-
-***
+Introducing **FireBot**! A discord bot made using [discord.py](https://discordpy.readthedocs.io/en/latest/index.html). This single bot is capable of moderating a server single handedly. 
+It has a buch of fun commands and even more moderation commands!
 
 ## Usage
 
 ### Moderations Commands
 
-* Ban: To ban a member
-* Unban: To unban a member
-* Kick: To kick a member
-* Welcome message: Custom welcome message for your new members
-* Load/unload: to load/unload a command
+* ban: To ban a member
+* unban: To unban a member
+* kick: To kick a member
+* welcome: Custom welcome message for your new members
+* exp_multiplayer: Sets the speed at which users get exp
+* load/unload: to load/unload a command
 
 ### Fun
 
@@ -32,24 +30,18 @@ Introducing **FireBot**! A simple discord bot made using [discord.py](https://di
 * report: report Something to the staff for breaking rules
 * av: Get avatar of a user
 
-***
-
 ## Contribution
 Feel free to grab a bug and squash it down. Or you can add a new feature if you wish. After all, this is a community project.
-
-***
 
 ## Contributors
 
 ### FirePlank
 ![FirePlank](https://avatars2.githubusercontent.com/u/44502537?s=64&v=4)
-
-This (mysterious) guy did all the mod commands and built the backbone of the bot.
+This (mysterious) guy started the making of this bot and did a lot of the commands and built the backbone of the bot.
 
 ### Muhimen123
 ![Muhimen](https://avatars2.githubusercontent.com/u/44261822?s=60&v=4)
-
-Person behind few of the fun commands (and bug killing)
+Person behind few of the fun commands
 
 ## Join us
 Wanna see how the bot works? Wanna say hello to us? Come join our official discord server. 

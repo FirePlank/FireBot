@@ -25,6 +25,7 @@ class Helpful(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.orange())
 
         embed.set_author(name="Moderation Commands", icon_url=self.client.user.avatar_url)
+        embed.add_field(name="f.exp_multiplayer <amount>", value="Sets the speed that people gain exp", inline=False)
         embed.add_field(name="f.clear <amount (optional)> / f.sweep / f.cls / f.clean", value="Deletes the specified amount of messages. Default is 10", inline=False)
         embed.add_field(name="f.ban <user> <reason (optional)>", value="Bans the specified person. Reason is optional", inline=False)
         embed.add_field(name="f.unban <user> <reason (optional)>", value="Unbans the specified person. Reason is optional", inline=False)
@@ -52,6 +53,7 @@ class Helpful(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.orange())
 
         embed.set_author(name="Helpful Commands", icon_url=self.client.user.avatar_url)
+        embed.add_field(name="f.rank <user (optional)>", value="Gives you the specified users rank. Default is your own rank", inline=False)
         embed.add_field(name="f.ping", value="Returns the bot's current ping", inline=False)
         embed.add_field(name="f.channel_status <channel (optional)> / f.channel_health / f.channel_info", value="Tells the channels health", inline=False)
         embed.add_field(name="f.report <msg>", value="Reports a msg to staff about rule breakers etc.", inline=False)
