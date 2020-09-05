@@ -89,6 +89,30 @@ class AdminCommands(commands.Cog):
         cursor.close()
         db.close()
 
+    @welcome.command()
+    @commands.has_permissions(manage_messages=True)
+    async def check(self, ctx):
+        db = sqlite3.connect("main.sqlite")
+        cursor = db.cursor()
+        cursor.execute(f"SELECT msg FROM welcome WHERE guild_id = {ctx.guild.id}")
+        result = cursor.fetchone()
+        cursor.execute(f"SELECT channel_id FROM welcome WHERE guild_id = {ctx.guild.id}")
+        result1 = cursor.fetchone()
+
+        if result[0] is None: msg = "NONE"
+        else: msg = result[0]
+        if result1[0] is None: channel = "NONE"
+        else: channel = result1[0]
+
+        embed = discord.Embed(colour=discord.Colour.orange())
+
+        embed.set_author(name="Command Configuration", icon_url=self.client.user.avatar_url)
+        embed.add_field(name="Welcome Message Config:",
+                        value=f'The welcome channel is set to <#{channel}>\nThe welcome text set to:\n\n"{msg}"',
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
 
 def setup(client):
     client.add_cog(AdminCommands(client))
