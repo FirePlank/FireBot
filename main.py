@@ -3,7 +3,7 @@ import os
 import sqlite3
 from discord.ext import commands
 
-client = commands.Bot(command_prefix = 'f.')
+client = commands.Bot(command_prefix = ['f.', 'F.'], case_insensitive=True)
 client.remove_command('help')
 
 @client.event
