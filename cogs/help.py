@@ -26,6 +26,8 @@ class Helpful(commands.Cog):
 
         embed.set_author(name="Moderation Commands", icon_url=self.client.user.avatar_url)
         embed.add_field(name="f.exp_multiplayer <amount>", value="Sets the speed that people gain exp", inline=False)
+        embed.add_field(name="f.set_lvl <amount> <user (optional)>", value="Sets the specified user's level to the given amount. Default is your own lvl", inline=False)
+        embed.add_field(name="f.set_exp <amount> <user (optional)>", value="Sets the specified user's exp to the given amount. Default is your own exp", inline=False)
         embed.add_field(name="f.clear <amount (optional)> / f.sweep / f.cls / f.clean", value="Deletes the specified amount of messages. Default is 10", inline=False)
         embed.add_field(name="f.ban <user> <reason (optional)>", value="Bans the specified person. Reason is optional", inline=False)
         embed.add_field(name="f.unban <user> <reason (optional)>", value="Unbans the specified person. Reason is optional", inline=False)
@@ -58,7 +60,7 @@ class Helpful(commands.Cog):
         embed.add_field(name="f.channel_status <channel (optional)> / f.channel_health / f.channel_info", value="Tells the channels health", inline=False)
         embed.add_field(name="f.report <msg>", value="Reports a msg to staff about rule breakers etc.", inline=False)
         embed.add_field(name="f.check <timeframe (optional)> <channel (optional)> <user (optional)> / f.stats / f.activity / f.messages", value="Shows the amount of messages the specified user has sent on the specified channel in the specified timeframe", inline=False)
-        embed.add_field(name="f.av <mention user (optional)>", value="Shows the avatar the of the mentioned user. If no one is mentioned, the avatar of the author is returned. ", inline=False)
+        embed.add_field(name="f.av <mention user (optional)>", value="Shows the avatar the of the mentioned user. If no one is mentioned, the avatar of the author is returned.", inline=False)
 
         await ctx.send(embed=embed)
 
