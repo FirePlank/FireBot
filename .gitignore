@@ -32,3 +32,4 @@ docs/_build/
 Procfile
 key.txt
 HEROKU/
+database.txt
