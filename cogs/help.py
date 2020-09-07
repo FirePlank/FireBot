@@ -25,6 +25,9 @@ class Helpful(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.orange())
 
         embed.set_author(name="Moderation Commands", icon_url=self.client.user.avatar_url)
+        embed.add_field(name="f.exp_mute <channel>", value="Makes it so that you don't gain exp by talking in that specific channel", inline=False)
+        embed.add_field(name="f.exp_unmute <channel>", value="Makes it so that you can gain exp again by talking in that specific channel", inline=False)
+        embed.add_field(name="f.show_exp_muted", value="Shows all the currently muted channels", inline=False)
         embed.add_field(name="f.exp_multiplayer <amount>", value="Sets the speed that people gain exp", inline=False)
         embed.add_field(name="f.set_lvl <amount> <user (optional)>", value="Sets the specified user's level to the given amount. Default is your own lvl", inline=False)
         embed.add_field(name="f.set_exp <amount> <user (optional)>", value="Sets the specified user's exp to the given amount. Default is your own exp", inline=False)
@@ -55,6 +58,7 @@ class Helpful(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.orange())
 
         embed.set_author(name="Helpful Commands", icon_url=self.client.user.avatar_url)
+        embed.add_field(name="f.poll <suggestion> / f.suggestion", value="Creates a poll where people can vote by reacting", inline=False)
         embed.add_field(name="f.rank <user (optional)>", value="Gives you the specified users rank. Default is your own rank", inline=False)
         embed.add_field(name="f.ping", value="Returns the bot's current ping", inline=False)
         embed.add_field(name="f.channel_status <channel (optional)> / f.channel_health / f.channel_info", value="Tells the channels health", inline=False)
