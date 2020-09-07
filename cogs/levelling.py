@@ -11,6 +11,9 @@ class AdminCommands(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.bot or message.content[:2] in ["f.", "p!"] or message.content[0] == ";": return
+        result = await self.client.pg_con.fetchval("SELECT exp_muted FROM level_settings WHERE guild_id = $1", message.guild.id)
+        if not result is None:
+            if str(message.channel.id) in result: return
 
         author_id = message.author.id
         guild_id = message.guild.id
@@ -41,11 +44,12 @@ class AdminCommands(commands.Cog):
             exp_end = math.floor(5 * (lvl_start ** 2) + 50 * lvl_start + 100)
 
             if exp_end<exp_start:
-                if lvl_start+1 == 5: await self.client.add_roles(message.author, 749699380214366318) ## TODO change these hardcoded roles to server specific
-                elif lvl_start+1 == 10: await self.client.add_roles(message.author, 741008881563467989) ## TODO change these hardcoded roles to server specific
-                elif lvl_start+1 == 20: await self.client.add_roles(message.author, 741008953911017553) ## TODO change these hardcoded roles to server specific
+                await self.client.pg_con.execute("UPDATE levels SET lvl = $1, exp = $2 WHERE guild_id = $3 and user_id = $4", lvl_start + 1, exp_start - exp_end, guild_id, author_id)
 
-                await self.client.pg_con.execute("UPDATE levels SET lvl = $1, exp = $2 WHERE guild_id = $3 and user_id = $4", lvl_start+1, exp_start-exp_end, guild_id, author_id)
+                if lvl_start+1 == 5: await message.author.add_roles(discord.utils.get(message.author.guild.roles, id=749699380214366318)) ## TODO change these hardcoded roles to server specific
+                elif lvl_start+1 == 10: await message.author.add_roles(discord.utils.get(message.author.guild.roles, id=741008881563467989)) ## TODO change these hardcoded roles to server specific
+                elif lvl_start+1 == 20: await message.author.add_roles(discord.utils.get(message.author.guild.roles, id=741008953911017553)) ## TODO change these hardcoded roles to server specific
+                elif lvl_start+1 == 30: await message.author.add_roles(discord.utils.get(message.author.guild.roles, id=752222222269284456))  ## TODO change these hardcoded roles to server specific
 
     @commands.command()
     async def rank(self, ctx, user:discord.User=None):
@@ -57,7 +61,7 @@ class AdminCommands(commands.Cog):
                 embed = discord.Embed(colour=discord.Colour.orange())
                 embed.set_author(name=f"{ctx.message.author.name}'s Rank", icon_url=ctx.message.author.avatar_url)
                 embed.add_field(name=f"Level:", value=result["lvl"])
-                embed.add_field(name=f"EXP:", value=f"{str(result['exp'])}/{str(math.floor(5 * ((int(result['lvl'])+1) ** 2) + 50 * (int(result['lvl'])+1) + 100))}")
+                embed.add_field(name=f"EXP:", value=f"{str(result['exp'])}/{math.floor(5 * ((int(result['lvl'])+1) ** 2) + 50 * (int(result['lvl'])+1) + 100)}")
 
                 await ctx.send(embed=embed)
 
@@ -69,7 +73,7 @@ class AdminCommands(commands.Cog):
                 embed = discord.Embed(colour=discord.Colour.orange())
                 embed.set_author(name=f"{user.name}'s Rank", icon_url=user.avatar_url)
                 embed.add_field(name=f"Level:", value=result["lvl"])
-                embed.add_field(name=f"EXP:", value=f"{result['exp']}/{math.floor(5 * ((int(result['lvl'])+1 + 1) ** 2) + 50 * (int(result['lvl'])+1) + 100)}")
+                embed.add_field(name=f"EXP:", value=f"{result['exp']}/{math.floor(5 * ((int(result['lvl'])+1) ** 2) + 50 * (int(result['lvl'])+1) + 100)}")
 
                 await ctx.send(embed=embed)
 
@@ -78,17 +82,17 @@ class AdminCommands(commands.Cog):
         if number > 5:
             await ctx.send("Sorry. The maximum multiplier you can have is 5")
             return
-        result = await self.client.pg_con.fetchval("SELECT multiplier FROM level_settings WHERE guild_id = $1", ctx.message.guild.id)
+        result = await self.client.pg_con.fetchval("SELECT multiplier FROM level_settings WHERE guild_id = $1", ctx.guild.id)
         if result is None:
-            await self.client.pg_con.execute("INSERT INTO level_settings(guild_id, multiplier) VALUES($1,$2)", ctx.message.author.guild.id, number)
+            await self.client.pg_con.execute("INSERT INTO level_settings(guild_id, multiplier) VALUES($1,$2)", ctx.guild.id, number)
             await ctx.send(f"The exp multiplier has been set to {number}")
         else:
             await self.client.pg_con.execute("UPDATE level_settings SET multiplier = $1 WHERE guild_id = $2", number, ctx.guild.id)
             await ctx.send(f"The exp multiplier has been updated to {number}")
 
-    @commands.command()
+    @commands.command(aliases=["set_level", "set_rank"])
     @commands.has_permissions(administrator=True)
-    async def set_lvl(self, ctx, amount:int, user:discord.User=None):
+    async def set_lvl(self, ctx, amount:int, *, user:discord.User=None):
         if user is None: user = ctx.author
         guild_id = ctx.guild.id
 
@@ -100,9 +104,9 @@ class AdminCommands(commands.Cog):
         await ctx.send(f"{user.name}'s level has been set to {amount}")
 
 
-    @commands.command()
+    @commands.command(aliases=["set_experience", "set_ex"])
     @commands.has_permissions(administrator=True)
-    async def set_exp(self, ctx, amount: int, user: discord.User = None):
+    async def set_exp(self, ctx, amount: int, *, user: discord.User = None):
         if user is None: user = ctx.author
         guild_id = ctx.guild.id
 
@@ -120,6 +124,43 @@ class AdminCommands(commands.Cog):
             await self.client.pg_con.execute("UPDATE levels SET exp = $1 WHERE guild_id = $2 and user_id = $3", amount, guild_id, user.id)
 
         await ctx.send(f"{user.name}'s exp has been set to {amount}")
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def exp_mute(self, ctx, channel:discord.TextChannel):
+        result = await self.client.pg_con.fetchrow("SELECT * FROM level_settings WHERE guild_id = $1", ctx.guild.id)
+        if result["exp_muted"] is None: await self.client.pg_con.execute("UPDATE level_settings SET exp_muted = $1 WHERE guild_id = $2", [str(channel.id)], ctx.guild.id)
+        else:
+            lst = result["exp_muted"]
+            lst.append(str(channel.id))
+            await self.client.pg_con.execute("UPDATE level_settings SET exp_muted = $1 WHERE guild_id = $2", lst, ctx.guild.id)
+
+        await ctx.send(f"{channel.mention} is now exp muted")
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def exp_unmute(self, ctx, channel: discord.TextChannel):
+        result = await self.client.pg_con.fetchrow("SELECT * FROM level_settings WHERE guild_id = $1", ctx.guild.id)
+        if result["exp_muted"] is None: await ctx.send("You haven't exp muted anything!")
+        else:
+            lst = result["exp_muted"]
+            if str(channel.id) not in lst: await ctx.send(f"The channel {channel.mention} is not currently exp muted")
+            else:
+                lst.remove(str(channel.id))
+                await self.client.pg_con.execute("UPDATE level_settings SET exp_muted = $1 WHERE guild_id = $2", lst, ctx.guild.id)
+                await ctx.send(f"{channel.mention} is no longer exp muted")
+
+    @commands.command()
+    async def show_exp_muted(self, ctx):
+        result = await self.client.pg_con.fetchval("SELECT exp_muted FROM level_settings WHERE guild_id = $1", ctx.guild.id)
+        lst = []
+        for i in result:
+            lst.append(f"<#{str(i)}>")
+
+        embed = discord.Embed(colour=discord.Colour.orange(), description=", ".join(lst))
+        embed.set_author(name=f"Exp Muted Channels", icon_url=self.client.user.avatar_url)
+
+        await ctx.send(embed=embed)
 
 
 def setup(client):
