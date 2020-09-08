@@ -47,6 +47,7 @@ class Helpful(commands.Cog):
 
         embed.set_author(name="Fun Commands", icon_url=self.client.user.avatar_url)
         embed.add_field(name="f.8ball <question> / f.magicball / f.eightball / f.enlightenme", value="Ask a question and the magic eight ball will answer you", inline=False)
+        embed.add_field(name="f.pokedex <pokemon> / f.poke_info", value="Gets info about the specified pokemon", inline=False)
         embed.add_field(name="f.echo <message> / f.mimic / f.paste / f.say", value="Says what you say to it", inline=False)
         embed.add_field(name="f.fact", value="Tells a random fact", inline=False)
         embed.add_field(name="f.emoji <emoji>", value="Returns an appropriate(but random) emoji based on your search", inline=False)
