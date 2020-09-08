@@ -4,7 +4,7 @@ import requests
 
 
 
-class PokemonCommands(commands.Cog):
+class FunCommands(commands.Cog):
     def __init__(self, client):
         self.client = client
 
@@ -44,7 +44,7 @@ class PokemonCommands(commands.Cog):
                 await ctx.send(embed=message)
 
         else:
-            message = discord.Embed(title="Why the name is in two word?", color=discord.Colour.orange())
+            message = discord.Embed(title="The name cannot contain two or more words", color=discord.Colour.orange())
 
 
 
@@ -65,4 +65,4 @@ def get_image(data):
     return image
 
 def setup(client):
-    client.add_cog(PokemonCommands(client))
+    client.add_cog(FunCommands(client))

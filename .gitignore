@@ -29,7 +29,3 @@ coverage.xml
 *.log
 *.pot
 docs/_build/
-Procfile
-key.txt
-HEROKU/
-database.txt

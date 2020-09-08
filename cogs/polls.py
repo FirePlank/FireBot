@@ -9,6 +9,7 @@ class Helpful(commands.Cog):
 
     @commands.command(aliases=["suggestion"])
     async def poll(self, ctx, *, suggestion):
+        await ctx.message.delete()
         embed = discord.Embed(colour=discord.Colour.orange())
 
         embed.set_author(name=f"Poll by {ctx.author.name}", icon_url=ctx.author.avatar_url)
@@ -22,6 +23,7 @@ class Helpful(commands.Cog):
     @commands.command()
     async def multi_choice(self, ctx, suggestion:str, *args):
         if len(args) > 10: await ctx.send("The maximum amount of choices you can pass is 10")
+        await ctx.message.delete()
         reactions = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
         embed = discord.Embed(colour=discord.Colour.orange())
 
