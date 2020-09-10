@@ -52,7 +52,6 @@ Person behind few of the fun commands
 
 ## Join us
 Wanna see how the bot works? Wanna say hello to us? Come join our official discord server. 
-
-[Invitation link](https://discord.gg/K2Cf6ma)
+[![Invitation link](https://discord.com/api/guilds/713785142597910549/widget.png?style=banner4)](https://discord.gg/K2Cf6ma)
 
 Waiting for your arrival!
