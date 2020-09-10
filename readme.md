@@ -31,24 +31,8 @@ It has a buch of fun commands and even more moderation commands!
 * report: report Something to the staff for breaking rules
 * av: Get avatar of a user
 
-***
-
 ## Contribution
 Feel free to grab a bug and squash it down. Or you can add a new feature if you wish. After all, this is a community project.
-
-***
-
-## Contributors
-
-### FirePlank
-![FirePlank](https://avatars2.githubusercontent.com/u/44502537?s=64&v=4)
-
-This (mysterious) guy started the making of this bot and did a lot of the commands and built the backbone of the bot.
-
-### Muhimen123
-![Muhimen](https://avatars2.githubusercontent.com/u/44261822?s=60&v=4)
-
-Person behind few of the fun commands
 
 ## Join us
 Wanna see how the bot works? Wanna say hello to us? Come join our official discord server. 
