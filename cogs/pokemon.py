@@ -16,17 +16,17 @@ class FunCommands(commands.Cog):
     async def poke_invite(self, ctx):
         mentions = ctx.message.mentions
         if os.path.isfile('battle_data.json'):
-            await ctx.send("Sorry, there is already a battle under going.")
+            await ctx.send(embed=discord.Embed(title="Sorry, there is already a battle under going.", color=discord.Colour.red()))
             return
 
         if len(mentions) == 0:
-            await ctx.send("Please mention someone for a pokemon battle.")
+            await ctx.send(embed=discord.Embed(title="Please mention someone for a pokemon battle.", color=discord.Colour.red()))
 
         elif len(mentions) > 1:
-            await ctx.send("You can't invite multiple person for a battle.")
+            await ctx.send(embed=discord.Embed(title="You can't invite multiple person for a battle.", color=discord.Colour.red()))
 
         elif ctx.author.name == mentions[0].name:
-            await ctx.send("You can't invite yourself for a battle.")
+            await ctx.send(embed=discord.Embed(title="You can't invite yourself for a battle.", color=discord.Colour.red()))
 
         else:
             message = discord.Embed(title="Pokemon Battle",
@@ -53,17 +53,17 @@ class FunCommands(commands.Cog):
                 data = json.load(file)
             
             if data['player_2'] == ctx.author.name:
-                await ctx.send("Get Ready for a battle!")
+                await ctx.send(embed=discord.Embed(title="Get Ready for a battle!", color=discord.Colour.orange()))
                 await self.choose(ctx)              
 
             elif data['player_1'] == ctx.author.name:
-                await ctx.send("You are the host. You can't accept your own invitations.")
+                await ctx.send(embed=discord.Embed(title="You are the host. You can't accept your own invitations.", color=discord.Colour.red()))
 
             else:
-                await ctx.send("You weren't invited for the battle.")
+                await ctx.send(embed=discord.Embed(title="You weren't invited for the battle.", color=discord.Colour.red()))
 
         else:
-            await ctx.send("There is no battle going on at this moment. Use `f.poke_invite <<user>>` to host a battle.")
+            await ctx.send(embed=discord.Embed(title="There is no battle going on at this moment. Use `f.poke_invite <<user>>` to host a battle.", color=discord.Colour.red()))
 
 
     @commands.command()
@@ -73,18 +73,18 @@ class FunCommands(commands.Cog):
                 data = json.load(file)
             
             if data['player_2'] == ctx.author.name:
-                await ctx.send("The battle is cancelled.")
+                await ctx.send(embed=discord.Embed(title="The battle is cancelled.", color=discord.Colour.red()))
                 os.remove("battle_data.json")
 
             elif data['player_1'] == ctx.author.name:
-                await ctx.send("The HOST decided to cancel the match.")
+                await ctx.send(embed=discord.Embed(title="The HOST decided to cancel the match.", color=discord.Colour.red()))
                 os.remove("battle_data.json")
 
             else:
-                await ctx.send("You weren't invited for the battle.")
+                await ctx.send(embed=discord.Embed(title="You weren't invited for the battle.", color=discord.Colour.red()))
 
         else:
-            await ctx.send("There is no battle going on at this moment. Use `f.poke_invite <<user>>` to host a battle.")
+            await ctx.send(embed=discord.Embed(title="There is no battle going on at this moment. Use `f.poke_invite <<user>>` to host a battle.", color=discord.Colour.red()))
 
     @commands.command()
     async def poke_leave(self, ctx):
@@ -205,18 +205,10 @@ class FunCommands(commands.Cog):
         else:
             await ctx.send("There is no battle going on at this moment. You can't use this command.")
 
-    @commands.command()
-    async def poke_use(self, ctx):
-        if os.path.isfile("battle_data.json"):
-            with open("battle_data.json", 'r') as file:
-                data = json.load(file)
-
-
-        else:
-            await ctx.send("There is no battle going on at this moment. You can't use this command.")
 
     @commands.command()
     async def poke_use(self, ctx, move):
+        match_ended = False
         if os.path.isfile("battle_data.json"):
             with open("battle_data.json", 'r') as file:
                 data = json.load(file)
@@ -259,30 +251,42 @@ class FunCommands(commands.Cog):
                 if self.first_move:
                     self.first_move=False
                     data[not_mover]["pokemon"]["health"] = int(data[not_mover]["pokemon"]["health"]) - move_dmg
+
+                    with open("battle_data.json", "w") as file:
+                        json.dump(data, file)
+
                     if int(data[not_mover]["pokemon"]["health"]) <= 0:
                         await ctx.send(f"{ctx.author.name} wins! {data['second_move']}'s pokemon has no health left.")
-                        os.remove("battle_data.json")
+                        match_ended = True
                         return
-
-                    await ctx.send(f"{ctx.author.name} used {move} and dealt {move_dmg} dmg!")
-                    await ctx.send(f"{data[not_mover]['player_name']}'s pokemon {data[not_mover]['pokemon']['name']} has {data[not_mover]['pokemon']['health']} health left")
-                    await ctx.send(f"It's {data['second_move']}'s turn! do `f.poke_use (move)` to use an move and `f.poke_moves` to see all your available moves.")
+                    else:
+                        await ctx.send(f"{ctx.author.name} used {move} and dealt {move_dmg} dmg!")
+                        await ctx.send(f"{data[not_mover]['player_name']}'s pokemon {data[not_mover]['pokemon']['name']} has {data[not_mover]['pokemon']['health']} health left")
+                        await ctx.send(f"It's {data['second_move']}'s turn! do `f.poke_use (move)` to use an move and `f.poke_moves` to see all your available moves.")
 
                 else:
                     self.first_move=True
                     data[mover]["pokemon"]["health"]=int(data[mover]["pokemon"]["health"])-move_dmg
+
+                    with open("battle_data.json", "w") as file:
+                        json.dump(data, file)
+
                     if int(data[mover]["pokemon"]["health"]) <= 0:
                         await ctx.send(f"{ctx.author.name} wins! {data['first_move']}'s pokemon has no health left.")
-                        os.remove("battle_data.json")
-                        return
-
-                    await ctx.send(f"{ctx.author.name} used {move} and dealt {move_dmg} dmg!")
-                    await ctx.send(f"{data[mover]['player_name']}'s pokemon {data[mover]['pokemon']['name']} has {data[mover]['pokemon']['health']} health left")
-                    await ctx.send(f"It's {data['first_move']}'s turn! do `f.poke_use (move)` to use an move and `f.poke_moves` to see all your available moves.")
+                        match_ended = True
+                        
+                    else:
+                        await ctx.send(f"{ctx.author.name} used {move} and dealt {move_dmg} dmg!")
+                        await ctx.send(f"{data[mover]['player_name']}'s pokemon {data[mover]['pokemon']['name']} has {data[mover]['pokemon']['health']} health left")
+                        await ctx.send(f"It's {data['first_move']}'s turn! do `f.poke_use (move)` to use an move and `f.poke_moves` to see all your available moves.")
 
 
         else:
             await ctx.send("There is no battle going on at this moment. You can't use this command.")
+
+        if match_ended:
+            os.remove("battle_data.json")
+
 
     @commands.command(aliases=['pokedex'])
     async def poke_info(self, ctx, *, name):
@@ -296,7 +300,7 @@ class FunCommands(commands.Cog):
                 name = data['name'].title()
                 height = str(data['height'] / 10) + "m"
                 weight = str(data['weight'] / 10) + "kg"
-                catagory = data['types'][0]['type']['name'].title()
+                category = data['types'][0]['type']['name'].title()
                 ability = [d['ability']['name'].capitalize() for d in data['abilities']]
 
                 message = discord.Embed(title=name, color=discord.Colour.orange())
@@ -305,7 +309,7 @@ class FunCommands(commands.Cog):
                 message.add_field(name="HP", value=hp)
                 message.add_field(name="Height", value=height)
                 message.add_field(name="Weight", value=weight)
-                message.add_field(name="Catagory", value=catagory)
+                message.add_field(name="Category", value=category)
                 message.add_field(name="Abilities", value="\n".join(ability))
 
                 await ctx.send(embed=message)
@@ -346,7 +350,7 @@ def get_pokemon_data(pokemon_name):
     poke_moves = []
     move_names = []
 
-    for move in response['moves']:
+    for i, move in enumerate(response['moves']):
         url = move["move"]["url"]
         response = requests.get(url).json()
         if response["power"] is None: power = 20
@@ -354,10 +358,14 @@ def get_pokemon_data(pokemon_name):
 
         tmp_dict = {
             "move_name": move['move']['name'],
-            "damage": power
+            "damage": power,
+            "move_index": i+1
         }
         move_names.append(f"{move['move']['name']} - {power}")
         poke_moves.append(tmp_dict)
+
+        if i == 3:
+            break
 
     pokemon_data['moves'] = poke_moves[:4]
 
@@ -374,7 +382,6 @@ def get_image(data):
     except:
         image = data['sprites']['front_shiny']
     return image
-
 
 
 def setup(client):
