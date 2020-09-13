@@ -15,103 +15,111 @@ class FunCommands(commands.Cog):
     @commands.command(aliases=['poke_battle', 'battle'])
     async def poke_invite(self, ctx):
         mentions = ctx.message.mentions
-        if os.path.isfile('battle_data.json'):
-            await ctx.send(embed=discord.Embed(title="Sorry, there is already a battle under going.", color=discord.Colour.red()))
-            return
 
         if len(mentions) == 0:
             await ctx.send(embed=discord.Embed(title="Please mention someone for a pokemon battle.", color=discord.Colour.red()))
-
         elif len(mentions) > 1:
-            await ctx.send(embed=discord.Embed(title="You can't invite multiple person for a battle.", color=discord.Colour.red()))
-
+            await ctx.send(embed=discord.Embed(title="You can't invite multiple person to a battle.", color=discord.Colour.red()))
         elif ctx.author.name == mentions[0].name:
-            await ctx.send(embed=discord.Embed(title="You can't invite yourself for a battle.", color=discord.Colour.red()))
+            await ctx.send(embed=discord.Embed(title="You can't invite yourself to a battle.", color=discord.Colour.red()))
+        elif mentions[0].bot:
+            await ctx.send(embed=discord.Embed(title="You can't invite a bot to a battle.", color=discord.Colour.red()))
 
         else:
-            message = discord.Embed(title="Pokemon Battle",
-                                    color=discord.Colour.orange(),
-                                    description=f"<@{ctx.author.id}> is inviting <@{mentions[0].id}> for a battle")
+            message = discord.Embed(title="Pokemon Battle", color=discord.Colour.orange(), description=f"<@{ctx.author.id}> is inviting <@{mentions[0].id}> to a battle")
 
             message.add_field(name="`f.accept`", value="To enter the battle")
             message.add_field(name="`f.decline`", value="To reject the battle")                    
-            
+
             await ctx.send(embed=message)
             data = {
                 "player_1": ctx.author.name,
                 "player_2": mentions[0].name
             }
 
-            with open("battle_data.json", "w") as file:
-                json.dump(data, file)
-
+            await self.client.pg_con.execute("INSERT INTO pokemon_games(guild_id, players, game) VALUES($1,$2,$3)", ctx.guild.id, [str(ctx.author), str(mentions[0])], json.dumps(data))
 
     @commands.command()
     async def accept(self, ctx):
-        if os.path.isfile("battle_data.json"):
-            with open("battle_data.json", "r") as file:
-                data = json.load(file)
-            
+        cont = False
+        result = await self.client.pg_con.fetch("SELECT * FROM pokemon_games WHERE guild_id = $1", ctx.guild.id)
+
+        if result is not None:
+            for i in result:
+                if str(ctx.author) in i["players"]:
+                    cont = True
+                    break
+            if not cont:
+                await ctx.send(embed=discord.Embed(title="You haven't been invited to any battle. Use `f.poke_invite <<user>>` to host a battle.", color=discord.Colour.red()))
+                return
+
+            data = result["game"]
+
             if data['player_2'] == ctx.author.name:
                 await ctx.send(embed=discord.Embed(title="Get Ready for a battle!", color=discord.Colour.orange()))
-                await self.choose(ctx)              
-
-            elif data['player_1'] == ctx.author.name:
-                await ctx.send(embed=discord.Embed(title="You are the host. You can't accept your own invitations.", color=discord.Colour.red()))
+                await self.choose(ctx)
 
             else:
-                await ctx.send(embed=discord.Embed(title="You weren't invited for the battle.", color=discord.Colour.red()))
+                await ctx.send(embed=discord.Embed(title="You are the host. You can't accept your own invitations.", color=discord.Colour.red()))
 
         else:
-            await ctx.send(embed=discord.Embed(title="There is no battle going on at this moment. Use `f.poke_invite <<user>>` to host a battle.", color=discord.Colour.red()))
-
+            await ctx.send(embed=discord.Embed(title="You haven't been invited to any battle. Use `f.poke_invite <<user>>` to host a battle.", color=discord.Colour.red()))
 
     @commands.command()
     async def decline(self, ctx):
-        if os.path.isfile("battle_data.json"):
-            with open("battle_data.json", "r") as file:
-                data = json.load(file)
-            
-            if data['player_2'] == ctx.author.name:
-                await ctx.send(embed=discord.Embed(title="The battle is cancelled.", color=discord.Colour.red()))
-                os.remove("battle_data.json")
+        cont = False
+        result = await self.client.pg_con.fetch("SELECT * FROM pokemon_games WHERE guild_id = $1", ctx.guild.id)
 
-            elif data['player_1'] == ctx.author.name:
-                await ctx.send(embed=discord.Embed(title="The HOST decided to cancel the match.", color=discord.Colour.red()))
-                os.remove("battle_data.json")
+        if result is not None:
+            for i in result:
+                if str(ctx.author) in i["players"]:
+                    cont = True
+                    right = i
+                    break
+            if not cont:
+                await ctx.send(embed=discord.Embed(title="You haven't been invited to any battle. Use `f.poke_invite <<user>>` to host a battle.", color=discord.Colour.red()))
+                return
 
-            else:
-                await ctx.send(embed=discord.Embed(title="You weren't invited for the battle.", color=discord.Colour.red()))
-
+            await ctx.send(embed=discord.Embed(title="The battle was cancelled.", color=discord.Colour.red()))
+            await self.client.pg_con.execute("DELETE FROM pokemon_games WHERE guild_id = $1 and players = $2", ctx.guild.id, right["players"])
         else:
-            await ctx.send(embed=discord.Embed(title="There is no battle going on at this moment. Use `f.poke_invite <<user>>` to host a battle.", color=discord.Colour.red()))
+            await ctx.send(embed=discord.Embed(title="You haven't been invited to any battle. Use `f.poke_invite <<user>>` to host a battle.", color=discord.Colour.red()))
 
     @commands.command()
     async def poke_leave(self, ctx):
-        if os.path.isfile("battle_data.json"):
-            with open("battle_data.json", "r") as file:
-                data = json.load(file)
+        cont = False
+        result = await self.client.pg_con.fetch("SELECT * FROM pokemon_games WHERE guild_id = $1", ctx.guild.id)
+
+        if result is not None:
+            for i in result:
+                if str(ctx.author) in i["players"]:
+                    cont = True
+                    right = i
+                    break
+            if not cont:
+                await ctx.send(embed=discord.Embed(title="You haven't been invited to any battle. Use `f.poke_invite <<user>>` to host a battle.", color=discord.Colour.red()))
+                return
+
+            data = result["game"]
 
             if ctx.author.name == data['player_1']:
                 await ctx.send(f"{ctx.author.mention} decided to leave the arena. And the winner is {data['player_2']}")
-                os.remove("battle_data.json")
+                await self.client.pg_con.execute("DELETE FROM pokemon_games WHERE guild_id = $1 and players = $2", ctx.guild.id, right["players"])
+
             elif ctx.author.name == data['player_2']:
                 await ctx.send(f"{ctx.author.mention} decided to leave the arena. And the winner is {data['player_1']}")
-                os.remove("battle_data.json")
+                await self.client.pg_con.execute("DELETE FROM pokemon_games WHERE guild_id = $1 and players = $2", ctx.guild.id, right["players"])
+
             else:
                 await ctx.send("You are not a participant.")
 
         else:
-            await ctx.send("There is no battle going on at this moment. You can't use that command.")
+            await ctx.send(embed=discord.Embed(title="You haven't been invited to any battle. Use `f.poke_invite <<user>>` to host a battle.", color=discord.Colour.red()))
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
     async def poke_end(self, ctx):
-        try:
-            os.remove("battle_data.json")
-            await ctx.send("The battle was force stopped by the authority.")
-        except:
-            await ctx.send(f"There is no battle")
+        pass # TODO: make this thing
 
     async def choose(self, ctx):
         with open("battle_data.json", "r") as file:
@@ -147,12 +155,12 @@ class FunCommands(commands.Cog):
         
     @commands.command()
     async def poke_choose(self, ctx, *, pokemon):
+        await ctx.message.delete()
         if os.path.isfile("battle_data.json"):
             with open("battle_data.json", 'r') as file:
                 data = json.load(file)
             
             if not data['player_1']['chosen'] and ctx.author.name == data['player_1']['player_name']:
-                await ctx.message.delete()
                 if check_pokemon(pokemon):
                     with open("battle_data.json", "r") as file:
                         data = json.load(file)
@@ -179,7 +187,6 @@ class FunCommands(commands.Cog):
                 await ctx.send("You have already chosen your pokemon.")
             
             elif data['player_1']['chosen'] and ctx.author.name == data['player_2']['player_name']:
-                await ctx.message.delete()
                 if check_pokemon(pokemon):
                     with open("battle_data.json", "r") as file:
                         data = json.load(file)
@@ -258,7 +265,6 @@ class FunCommands(commands.Cog):
                     if int(data[not_mover]["pokemon"]["health"]) <= 0:
                         await ctx.send(f"{ctx.author.name} wins! {data['second_move']}'s pokemon has no health left.")
                         match_ended = True
-                        return
                     else:
                         await ctx.send(f"{ctx.author.name} used {move} and dealt {move_dmg} dmg!")
                         await ctx.send(f"{data[not_mover]['player_name']}'s pokemon {data[not_mover]['pokemon']['name']} has {data[not_mover]['pokemon']['health']} health left")
@@ -274,7 +280,7 @@ class FunCommands(commands.Cog):
                     if int(data[mover]["pokemon"]["health"]) <= 0:
                         await ctx.send(f"{ctx.author.name} wins! {data['first_move']}'s pokemon has no health left.")
                         match_ended = True
-                        
+
                     else:
                         await ctx.send(f"{ctx.author.name} used {move} and dealt {move_dmg} dmg!")
                         await ctx.send(f"{data[mover]['player_name']}'s pokemon {data[mover]['pokemon']['name']} has {data[mover]['pokemon']['health']} health left")
