@@ -1,6 +1,5 @@
 import discord
 import datetime
-import sqlite3
 from discord.ext import commands
 
 class AdminCommands(commands.Cog):
