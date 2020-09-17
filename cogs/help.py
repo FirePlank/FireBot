@@ -60,6 +60,7 @@ class Helpful(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.orange())
 
         embed.set_author(name="Helpful Commands", icon_url=self.client.user.avatar_url)
+        embed.add_field(name="f.members / f.member_count / f.count", value="Tell's the current amount of members on the server", inline=False)
         embed.add_field(name="f.poll <suggestion> / f.suggestion", value="Creates a poll where people can vote by reacting", inline=False)
         embed.add_field(name="f.rank <user (optional)>", value="Gives you the specified users rank. Default is your own rank", inline=False)
         embed.add_field(name="f.ping", value="Returns the bot's current ping", inline=False)
