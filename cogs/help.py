@@ -64,6 +64,7 @@ class Helpful(commands.Cog):
         embed.add_field(name="f.poll <suggestion> / f.suggestion", value="Creates a poll where people can vote by reacting", inline=False)
         embed.add_field(name="f.rank <user (optional)>", value="Gives you the specified users rank. Default is your own rank", inline=False)
         embed.add_field(name="f.ping", value="Returns the bot's current ping", inline=False)
+        embed.add_field(name="f.whois <member (optional)>", value="Returns info on the given user. If no one is mentioned, the info of the author is given.", inline=False)
         embed.add_field(name="f.channel_status <channel (optional)> / f.channel_health / f.channel_info", value="Tells the channels health", inline=False)
         embed.add_field(name="f.report <msg>", value="Reports a msg to staff about rule breakers etc.", inline=False)
         embed.add_field(name="f.check <timeframe (optional)> <channel (optional)> <user (optional)> / f.stats / f.activity / f.messages", value="Shows the amount of messages the specified user has sent on the specified channel in the specified timeframe", inline=False)
