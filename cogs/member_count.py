@@ -13,7 +13,7 @@ class FunCommands(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.orange())
 
         embed.set_author(name="Member Count", icon_url=self.client.user.avatar_url)
-        embed.add_field(name="Current Member Count:", value=str(len(list(ctx.guild.members))))
+        embed.add_field(name="Current Member Count:", value=ctx.guild.member_count)
         embed.set_footer(text=ctx.guild, icon_url=ctx.guild.icon_url)
         embed.timestamp = datetime.datetime.utcnow()
 

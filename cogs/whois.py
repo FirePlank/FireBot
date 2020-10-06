@@ -22,11 +22,11 @@ class HelpfulCommands(commands.Cog):
         created_at = created_at.strftime("%d-%m-%Y")
 
         message = discord.Embed(color=discord.Colour.orange())
-        message.add_field(name="Account created at", value=created_at, inline=False)
-        message.add_field(name="Joined at", value=joined_at, inline=False)
+        message.add_field(name="Account created at:", value=created_at, inline=False)
+        message.add_field(name="Joined at:", value=joined_at, inline=False)
         message.add_field(name="Nickname", value=nick, inline=False)
-        message.add_field(name="Status", value=status, inline=False)
-        message.add_field(name="Activity", value=activity, inline=False)
+        message.add_field(name="Status:", value=status, inline=False)
+        message.add_field(name="Activity:", value=activity, inline=False)
         message.set_author(name=author, icon_url=image_url)
 
         await ctx.send(embed=message)
