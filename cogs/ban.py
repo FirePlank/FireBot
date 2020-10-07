@@ -13,6 +13,7 @@ class AdminCommands(commands.Cog):
         await member.ban(reason=reason)
         await ctx.send(f"{member} has been banned.")
 
+#try dm member ban
 
 def setup(client):
     client.add_cog(AdminCommands(client))

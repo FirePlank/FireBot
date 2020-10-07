@@ -52,6 +52,7 @@ class Helpful(commands.Cog):
         embed.add_field(name="f.echo <message> / f.mimic / f.paste / f.say", value="Says what you say to it", inline=False)
         embed.add_field(name="f.fact", value="Tells a random fact", inline=False)
         embed.add_field(name="f.emoji <emoji>", value="Returns an appropriate(but random) emoji based on your search", inline=False)
+        embed.add_field(name="f.amongus", value="Returns a cool embeded invite", inline=False)
 
         await ctx.send(embed=embed)
 
