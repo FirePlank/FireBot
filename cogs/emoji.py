@@ -28,7 +28,7 @@ class Fun(commands.Cog):
             else:
                 await ctx.send("Sorry, nothing for you boomer!")
         else:
-            await ctx.send("Sorry, nothign for you boomer!")
+            await ctx.send("Sorry, nothing for you boomer!")
 
 
     @commands.command()
@@ -48,7 +48,9 @@ class Fun(commands.Cog):
                 titles.append(title)
                 more_than_5 = True
 
-            if not nsfw_check(images):
+            if len(images) == 0:
+                await ctx.send("Sorry, nothing for you boomer!")
+            elif not nsfw_check(images):
                 for i in range(5):
                     message = discord.Embed(title=titles[i].title(), color=discord.Colour.orange())
                     message.set_image(url=images[i])
