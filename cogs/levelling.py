@@ -77,6 +77,13 @@ class AdminCommands(commands.Cog):
 
                 await ctx.send(embed=embed)
 
+    @commands.command(aliases=["lb, top"])
+    async def leaderboard(self, ctx):
+        result = await self.client.pg_con.fetchall("SELECT * FROM levels WHERE guild_id = $1", ctx.guild.id)
+
+
+
+
     @commands.command()
     async def exp_multiplier(self, ctx, number:float):
         if number > 5:
@@ -97,6 +104,7 @@ class AdminCommands(commands.Cog):
         guild_id = ctx.guild.id
 
         result = await self.client.pg_con.fetchval("SELECT lvl FROM levels WHERE guild_id = $1 and user_id = $2", guild_id, user.id)
+
         if result is None:
             await self.client.pg_con.execute("INSERT INTO levels(guild_id, user_id, exp, lvl, last_msg) VALUES($1,$2,$3,$4,$5)",  guild_id, user.id, 0, amount, time.time()-60)
         else:
@@ -151,7 +159,7 @@ class AdminCommands(commands.Cog):
                 await ctx.send(f"{channel.mention} is no longer exp muted")
 
     @commands.command()
-    async def show_exp_muted(self, ctx):
+    async def exp_muted(self, ctx):
         result = await self.client.pg_con.fetchval("SELECT exp_muted FROM level_settings WHERE guild_id = $1", ctx.guild.id)
         lst = []
         for i in result:
