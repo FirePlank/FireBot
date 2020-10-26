@@ -26,8 +26,7 @@ class FunCommands(commands.Cog):
 
         else:
             embed = discord.Embed(title=f"The site was unable to be reached. Please try again later", colour=discord.Colour.blurple())
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
 
         embed = discord.Embed(title = f"{ctx.author.display_name} slapped {member.display_name}!", colour=discord.Colour.blurple())
 
@@ -48,12 +47,10 @@ class FunCommands(commands.Cog):
             uri = random.choice(random.choice(top_gifs['results'])['media'])["gif"]["url"]
 
         else:
-            embed = discord.Embed(title=f"The site was unable to be reached. Please try again later",
-                                  colour=discord.Colour.blurple())
-            await ctx.send(embed=embed)
-            return
+            embed = discord.Embed(title=f"The site was unable to be reached. Please try again later", colour=discord.Colour.blurple())
+            return await ctx.send(embed=embed)
 
-        embed = discord.Embed(title=f"{ctx.author.display_name} slapped {member.display_name}!", colour=discord.Colour.blurple())
+        embed = discord.Embed(title=f"{ctx.author.display_name} punched {member.display_name}!", colour=discord.Colour.blurple())
 
         embed.set_image(url=uri)
         embed.set_footer(text="Powered by Tenor")
