@@ -3,7 +3,9 @@ import os
 import asyncpg
 from discord.ext import commands
 
-client = commands.Bot(command_prefix = ['f.', 'F.'], case_insensitive=True)
+intents = discord.Intents.default()
+intents.members = True
+client = commands.Bot(command_prefix = ['f.', 'F.'], case_insensitive=True, intents=intents)
 client.remove_command('help')
 
 async def create_db_pool():
