@@ -57,7 +57,7 @@ class AdminCommands(commands.Cog):
             await ctx.send(f'The welcome message has been set to "{text}"')
 
         else:
-            await self.client.pg_con.execute("UPDATE welcome SET msg = ? WHERE guild_id = ?", text, ctx.guild.id)
+            await self.client.pg_con.execute("UPDATE welcome SET msg = $1 WHERE guild_id = $2", text, ctx.guild.id)
             await ctx.send(f'The welcome message has been updated to "{text}"')
 
     @welcome.command()
