@@ -38,15 +38,14 @@ class Helpful(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.channel)
     async def multi_choice(self, ctx, desc: str, *choices):
-        await ctx.message.delete()
-
         if len(choices) < 2:
             ctx.command.reset_cooldown(ctx)
             return await ctx.send("You have to have at least two choices")
-
         if len(choices) > 10:
             ctx.command.reset_cooldown(ctx)
             return await ctx.send("You can have a maximum of 10 choices")
+
+        await ctx.message.delete()
 
         embed = discord.Embed(description=f"**{desc}**\n\n" + "\n\n".join(
             f"{str(self.reactions[i])}  {choice}" for i, choice in enumerate(choices, 1)),

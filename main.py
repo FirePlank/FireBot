@@ -32,7 +32,7 @@ If you want to report something before the cooldown is over or you made a report
     elif isinstance(error, discord.ext.commands.errors.CommandOnCooldown):
         await ctx.send(f"You need to wait {error.retry_after:,.2f} seconds before trying this command again.")
 
-    else: await ctx.send(error)
+    else: raise error
 
 
 for filename in os.listdir('./cogs'):
