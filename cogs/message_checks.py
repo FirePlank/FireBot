@@ -72,6 +72,38 @@ class AdminCommands(commands.Cog):
             embed.add_field(name=f"Msg: {message.content}", value=f"Link to msg: {message.jump_url}", inline=False)
             embed.set_footer(text=f"ID: {message.author.id}")
             await channel.send(staff.mention, embed=embed)
+            
+        # AUTO MOD
+
+        if len(message.mentions) >= 5:
+            roles = message.guild.roles
+            user = message.author
+
+            # Check's if there is a muted role
+
+            for role in roles:
+                if role.name.upper() == "MUTED":
+                    muted_role = role
+
+            try:
+                # Mutes the user is possible
+                await user.add_roles(muted_role)
+                await message.channel.send(
+                    embed=discord.Embed(
+                        title=f"Stop pinging so much {message.author.name}!",
+                        color=discord.Colour.red()
+                    )
+                )
+
+            except Exception:
+                await message.channel.send(
+                    embed=discord.Embed(
+                        title="Couldn't found any **MUTED** role.",
+                        color=discord.Colour.red()
+                    )
+                )
+
+
 
 def setup(client):
     client.add_cog(AdminCommands(client))
