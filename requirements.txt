@@ -5,3 +5,4 @@ async-timeout==3.0.1
 requests==2.24
 bs4==0.0.1
 asyncpg
+chess
