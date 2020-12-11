@@ -23,17 +23,37 @@ class Helpful(commands.Cog):
 
 
     @commands.command(aliases=["suggestion"])
-    async def poll(self, ctx, *, suggestion):
+    async def poll(self, ctx, *, suggestion: str):
         await ctx.message.delete()
-        embed = discord.Embed(colour=discord.Colour.orange())
-
-        embed.set_author(name=f"Poll by {ctx.author.name}", icon_url=ctx.author.avatar_url)
-        embed.add_field(name=suggestion, value="­")
-        embed.timestamp = datetime.datetime.utcnow()
-
+        embed = discord.Embed(description=suggestion)
+        embed.set_author(name=f"Poll by {ctx.author.display_name}", icon_url=ctx.author.avatar_url)
         msg = await ctx.send(embed=embed)
-        await msg.add_reaction("👍")
-        await msg.add_reaction("👎")
+        await msg.add_reaction('👍')
+        await msg.add_reaction('👎')
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        user = payload.member
+        if user.bot:return
+        msg = await self.client.get_guild(payload.guild_id).get_channel(payload.channel_id).fetch_message(payload.message_id)
+        emoji = payload.emoji
+        users = []
+        if msg.author.bot and("👍"and"👎")in[str(i)for i in msg.reactions]:
+            for react in msg.reactions:
+                if str(react)=="👍":
+                    async for reactor in react.users():
+                        if reactor.bot:continue
+                        if reactor in users:
+                            await msg.remove_reaction(emoji, user)
+                            return
+                        users.append(reactor)
+                elif str(react)=="👎":
+                    async for reactor in react.users():
+                        if reactor.bot:continue
+                        if reactor in users:
+                            await msg.remove_reaction(emoji, user)
+                            return
+                    return
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.channel)

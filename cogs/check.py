@@ -27,7 +27,7 @@ class Helpful(commands.Cog):
 
                 counter = 0
                 async for message in channel.history(limit=5000, after=datetime.today() - timedelta(days=timeframe)):
-                    if str(message.author) == str(user):
+                    if message.author.id == user.id:
                         counter += 1
 
                 await msg.remove_reaction('🔎', member=message.author)

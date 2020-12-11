@@ -1,11 +1,15 @@
 import discord
+from datetime import datetime, timedelta
 import re
-from discord.ext import commands
+import time
+from discord.ext import commands, tasks
+
 
 class AdminCommands(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.check.start()
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -59,7 +63,50 @@ class AdminCommands(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         channel = message.channel
-        if str(channel) == "logs": return
+        if message.author.bot or str(channel) == "logs": return
+
+        ## AUTOMOD
+        muted_role = discord.utils.find(lambda r: r.name.upper() == 'MUTED', message.guild.roles)
+        result = await self.client.pg_con.fetchrow("SELECT * FROM infractions WHERE guild_id = $1 AND user_id = $2", message.guild.id, message.author.id)
+        if not result:
+            await self.client.pg_con.execute("INSERT INTO infractions(guild_id, user_id, infractions, last_infraction) VALUES($1,$2,$3,$4)", message.guild.id, message.author.id, 0, time.time()-20)
+            result = await self.client.pg_con.fetchrow("SELECT * FROM infractions WHERE guild_id = $1 AND user_id = $2", message.guild.id, message.author.id)
+
+        if float(time.time()) - float(result['last_infraction']) > 20:
+            await self.client.pg_con.execute(
+                "UPDATE infractions SET infractions = $1 WHERE guild_id = $2 and user_id = $3", 0, message.guild.id,
+                message.author.id)
+
+        mentions = len(message.mentions)
+        if mentions > 1:
+            infractions = 0
+            mentions = len(message.raw_mentions)
+            remover = 0
+            for i in range(mentions):
+                remover += .51
+            infractions += mentions - remover
+            infractions -= (len(message.content) - (22 * mentions)) * 0.005
+            infractions = round(infractions, 2)
+
+            if float(result['infractions'])+float(infractions)>2:
+                await message.author.add_roles(muted_role)
+                async for old_message in channel.history(limit=100, after=datetime.utcnow() - timedelta(seconds=25)):
+                    if old_message.author.id == message.author.id:
+                        await old_message.delete()
+
+                channel = self.client.get_channel(741011181484900464)
+
+                embed = discord.Embed(colour=discord.Colour.red(), title="__**AUTOMOD MUTE**__", icon_url=self.client.user.avatar_url, description=f"**{message.author}** has been muted for 20 minutes for getting too many mini-infractions in 20 seconds.")
+                await channel.send(embed=embed)
+
+                await message.author.send(f"You have been muted in **{message.guild}** for 20 minutes for getting too many mini-infractions in 20 seconds.")
+
+                await self.client.pg_con.execute("UPDATE infractions SET infractions = $1, last_infraction = $2 WHERE guild_id = $3 and user_id = $4", 0, time.time(), message.guild.id, message.author.id)
+
+            else:
+                await self.client.pg_con.execute("UPDATE infractions SET infractions = $1, last_infraction = $2 WHERE guild_id = $3 and user_id = $4", float(infractions)+float(result['infractions']), time.time(), message.guild.id, message.author.id)
+
+        ## DISCORD LINK CHECK
         REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
         links = REGEX.findall(message.content)
         if links:
@@ -72,6 +119,17 @@ class AdminCommands(commands.Cog):
             embed.add_field(name=f"Msg: {message.content}", value=f"Link to msg: {message.jump_url}", inline=False)
             embed.set_footer(text=f"ID: {message.author.id}")
             await channel.send(staff.mention, embed=embed)
+
+    @tasks.loop(seconds=20)
+    async def check(self):
+        result = await self.client.pg_con.fetch("SELECT last_infraction, user_id, guild_id FROM infractions")
+        for column in result:
+            guild = self.client.get_guild(int(column['guild_id']))
+            muted_role = discord.utils.find(lambda r: r.name.upper() == 'MUTED', guild.roles)
+            user = guild.get_member(int(column['user_id']))
+            if float(time.time())-float(column['last_infraction']) > 1200 and muted_role in user.roles:
+                await user.remove_roles(muted_role)
+
 
 def setup(client):
     client.add_cog(AdminCommands(client))
