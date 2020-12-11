@@ -1,5 +1,4 @@
 import discord
-import chess
 from discord.ext import commands
 
 class Fun(commands.Cog):
