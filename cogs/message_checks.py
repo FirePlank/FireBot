@@ -1,6 +1,7 @@
 import discord, asyncio
 import os
 import asyncpg
+from cogs.unicode_codes import UNICODE_EMOJI
 from datetime import datetime, timedelta
 from cogs.perspective import perspective
 import re
@@ -67,6 +68,7 @@ class AdminCommands(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         channel = message.channel
+        content = message.content
         if message.author.bot or str(channel) == "logs": return
 
         start_time = time.time()
@@ -92,16 +94,33 @@ class AdminCommands(commands.Cog):
         ## AUTOMOD QUICK MESSAGE
         if start_time-float(result['last_msg'])<0.4:
             infractions+=0.4
+        
+        ## AUTOMOD EMOJI SPAM
+        emojis_list = map(lambda x: ''.join(x.split()), UNICODE_EMOJI.keys())
+        r = re.compile('|'.join(re.escape(p) for p in emojis_list))
+        emoji_count = len(r.findall(content)) + len(re.findall(r'<[a]*:\w*:\d*>', content))
+        if emoji_count>5:
+            infractions+=emoji_count/10+0.3
+
+        ## AUTOMOD REPEATED TEXT
+        repeated_check = content.replace(" ", "")
+        if len(content)>15:
+            repeated = 0
+            temp = (repeated_check + repeated_check).find(repeated_check, 1, -1)
+            if temp != -1:
+                repeated = len(repeated_check) / temp
+            infractions+=round(repeated/3.5, 2)
+
+        ## AUTOMOD SELFBOT DETECTOR
+        if message.embeds:
+            infractions+=2
 
         ## AUTOMOD MASS PING
         mentions = len(message.mentions)
         if mentions > 1:
             mentions = len(message.raw_mentions)
-            remover = 0
-            for i in range(mentions):
-                remover += .51
-            infractions += mentions - remover
-            infractions -= (len(message.content) - (22 * mentions)) * 0.005
+            infractions += mentions - (.51*mentions)
+            infractions -= (len(content) - (22 * mentions)) * 0.005
             infractions = round(infractions, 2)
 
         ## AUTOMOD FILTER
@@ -110,7 +129,7 @@ class AdminCommands(commands.Cog):
             comment = None
             while count<10:
                 try:
-                    comment = self.perspective_obj.score(message.content, tests=["TOXICITY", "SEVERE_TOXICITY", "SPAM"], languages=['en'])
+                    comment = self.perspective_obj.score(content, tests=["TOXICITY", "SEVERE_TOXICITY", "SEXUALLY_EXPLICIT"])
                     break
                 except:
                     await asyncio.sleep(0.3)
@@ -118,10 +137,12 @@ class AdminCommands(commands.Cog):
             if comment is not None:
                 severe_toxic = comment["SEVERE_TOXICITY"].score
                 toxic = comment["TOXICITY"].score
+                sexual = comment["SEXUALLY_EXPLICIT"].score
                 # spam = comment["SPAM"].score
 
-                if toxic>0.5 and severe_toxic>0.5:
-                    if (toxic < severe_toxic or abs(toxic - severe_toxic) < 0.07) and severe_toxic>0.8:infractions+=0.65
+                if sexual>0.8:infractions+=0.75
+                elif toxic>0.6:
+                    if severe_toxic>0.8:infractions+=0.65
                     else:infractions+=0.4
                 # if spam>0.5:infractions+=spam
 
@@ -141,8 +162,7 @@ class AdminCommands(commands.Cog):
                                   description=f"**{message.author}** has been muted for 20 minutes for getting too many mini-infractions in 20 seconds.")
             await channel.send(embed=embed)
 
-            await message.author.send(
-                f"You have been muted in **{message.guild}** for 20 minutes for getting too many mini-infractions in 20 seconds.")
+            await message.author.send(f"You have been muted in **{message.guild}** for 20 minutes for getting too many mini-infractions in 20 seconds.")
 
             await self.client.pg_con.execute(
                 "UPDATE infractions SET infractions = $1, last_infraction = $2, last_msg = $3 WHERE guild_id = $4 and user_id = $5", 0,
@@ -160,10 +180,10 @@ class AdminCommands(commands.Cog):
 
         ## DISCORD LINK CHECK
         REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
-        links = REGEX.findall(message.content)
+        links = REGEX.findall(content)
         if links:
             for invite in await message.guild.invites():
-                if str(invite) == str(message.content).strip():
+                if str(invite) == str(content).strip():
                     return
 
             await message.delete()
@@ -174,10 +194,10 @@ class AdminCommands(commands.Cog):
             embed = discord.Embed(colour=discord.Colour.red())
 
             embed.add_field(name=f'__**A discord link has been detected!**__', value=f"Sender: <@{message.author.id}>", inline=False)
-            embed.add_field(name=f"Msg: {message.content}", value=f"Link to msg: {message.jump_url}", inline=False)
+            embed.add_field(name=f"Msg: {content}", value=f"Link to msg: {message.jump_url}", inline=False)
             embed.set_footer(text=f"ID: {message.author.id}")
             await channel.send(staff.mention, embed=embed)
-            await message.author.send(f"You are not allowed to send discord invites in this server. If you believe this was a mistake please contact staff.\nYour messsage: **{message.content}**")
+            await message.author.send(f"You are not allowed to send discord invites in this server. If you believe this was a mistake please contact staff.\nYour messsage: **{content}**")
 
     @tasks.loop(seconds=20)
     async def check(self):

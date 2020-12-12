@@ -1,21 +1,6 @@
 import json
 import httpx as requests
-import warnings
 from . import utils
-
-# allowed test types
-allowed = ["TOXICITY",
-           "SEVERE_TOXICITY",
-           "SPAM",
-           "TOXICITY_FAST",
-           "ATTACK_ON_AUTHOR",
-           "ATTACK_ON_COMMENTER",
-           "INCOHERENT",
-           "INFLAMMATORY",
-           "OBSCENE",
-           "OFF_TOPIC",
-           "UNSUBSTANTIAL",
-           "LIKELY_TO_REJECT"]
 
 class Perspective(object):
 
@@ -24,12 +9,10 @@ class Perspective(object):
     def __init__(self, key):
         self.key = key
 
-    def score(self, text, tests=None, context=None, languages=None, do_not_store=False, token=None, text_type=None):
+    def score(self, text, tests=None, do_not_store=False, token=None, text_type=None):
         # data validation
         # make sure it's a valid test
         # TODO: see if an endpoint that has valid types exists
-        if tests is None:
-            tests = ["TOXICITY"]
         if isinstance(tests, str):
             tests = [tests]
         if not isinstance(tests, (list, dict)) or tests is None:
@@ -47,33 +30,13 @@ class Perspective(object):
             else:
                 raise ValueError("{0} is not a valid text_type. Valid options are 'html' or 'md'".format(str(text_type)))
 
-        for test in tests.keys():
-            if test not in allowed:
-                warnings.warn("{0} might not be accepted as a valid test.".format(str(test)))
-            for key in tests[test].keys():
-                if key not in ["scoreType", "scoreThreshhold"]:
-                    raise ValueError("{0} is not a valid sub-property for {1}".format(key, test))
-
-        # The API will only grade text less than 3k characters long
-        if len(text) > 3000:
-            # TODO: allow disassembly/reassembly of >3000char comments
-            warnings.warn("Perspective only allows 3000 character strings. Only the first 3000 characters will be sent for processing")
-            text = text[:3000]
-        new_langs = []
-        if languages:
-            for language in languages:
-                language = language.lower()
-                if utils.validate_language(language):
-                    new_langs.append(language)
-
         # packaging data
         url = Perspective.base_url + "/comments:analyze"
         querystring = {"key": self.key}
         payload_data = {"comment": {"text": text}, "requestedAttributes": {}}
         for test in tests.keys():
             payload_data["requestedAttributes"][test] = tests[test]
-        if new_langs is not None:
-            payload_data["languages"] = new_langs
+        payload_data["languages"] = ['en']
         if do_not_store:
             payload_data["doNotStore"] = do_not_store
         payload = json.dumps(payload_data)
@@ -98,6 +61,7 @@ class Perspective(object):
             c.attributes.append(a)
         return c
 
+
 class Comment(object):
     def __init__(self, text, attributes, token):
         self.text = text
@@ -105,8 +69,6 @@ class Comment(object):
         self.token = token
 
     def __getitem__(self, key):
-        if key.upper() not in allowed:
-            raise ValueError("value {0} does not exist".format(key))
         for attr in self.attributes:
             if attr.name.lower() == key.lower():
                 return attr
@@ -129,6 +91,7 @@ class Comment(object):
     def __len__(self):
         return len(self.text)
 
+
 class Attribute(object):
     def __init__(self, name, spans, score, score_type):
         self.name = name
@@ -141,6 +104,7 @@ class Attribute(object):
 
     def __iter__(self):
         return iter(self.spans)
+
 
 class Span(object):
     def __init__(self, begin, end, score, score_type, comment):
@@ -155,6 +119,7 @@ class Span(object):
 
     def __repr__(self):
         return "<({0}) {1}>".format(self.score, self.comment.text[self.begin:self.end])
+
 
 class PerspectiveAPIException(Exception):
     pass
