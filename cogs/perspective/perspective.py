@@ -1,7 +1,7 @@
 import json
 import httpx as requests
 import warnings
-from perspective.utils import validate_language, remove_html
+from . import utils
 
 # allowed test types
 allowed = ["TOXICITY",
@@ -41,9 +41,9 @@ class Perspective(object):
             tests = new_data
         if text_type:
             if text_type.lower() == "html":
-                text = remove_html(text)
+                text = utils.remove_html(text)
             elif text_type.lower() == "md":
-                text = remove_html(text, md=True)
+                text = utils.remove_html(text, md=True)
             else:
                 raise ValueError("{0} is not a valid text_type. Valid options are 'html' or 'md'".format(str(text_type)))
 
@@ -63,7 +63,7 @@ class Perspective(object):
         if languages:
             for language in languages:
                 language = language.lower()
-                if validate_language(language):
+                if utils.validate_language(language):
                     new_langs.append(language)
 
         # packaging data
@@ -72,7 +72,7 @@ class Perspective(object):
         payload_data = {"comment": {"text": text}, "requestedAttributes": {}}
         for test in tests.keys():
             payload_data["requestedAttributes"][test] = tests[test]
-        if new_langs != None:
+        if new_langs is not None:
             payload_data["languages"] = new_langs
         if do_not_store:
             payload_data["doNotStore"] = do_not_store
