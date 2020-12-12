@@ -4,7 +4,7 @@ from discord.ext import commands
 import os
 import json
 import random
-import requests
+import httpx as requests
 
 
 
@@ -350,7 +350,8 @@ def check_pokemon(pokemon_name):
     URL = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name.lower()}"
 
     try:
-        response = requests.get(URL).json()
+        response = requests.get(URL)
+        response = response.json()
         name = response['name'].title()
         return True
     except:
@@ -359,7 +360,8 @@ def check_pokemon(pokemon_name):
 
 def get_pokemon_data(pokemon_name):
     URL = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name.lower()}"
-    response = requests.get(URL).json()
+    response = requests.get(URL)
+    response = response.json()
 
     pokemon_data = dict()
     pokemon_data["name"] = response["name"]
@@ -375,7 +377,8 @@ def get_pokemon_data(pokemon_name):
 
     for i, move in enumerate(response['moves']):
         url = move["move"]["url"]
-        response = requests.get(url).json()
+        response = requests.get(url)
+        response = response.json()
         if response["power"] is None: power = 20
         else: power = round(int(response["power"])/3)
 

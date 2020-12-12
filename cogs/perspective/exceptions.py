@@ -1,0 +1,2 @@
+class PerspectiveAPIException(Exception):
+    pass
