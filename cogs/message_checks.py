@@ -86,7 +86,7 @@ class AdminCommands(commands.Cog):
                 message.author.id)
 
         ## AUTOMOD QUICK MESSAGE
-        if start_time-float(result['last_msg'])<0.6:
+        if start_time-float(result['last_msg'])<0.4:
             infractions+=0.4
 
         ## AUTOMOD MASS PING
@@ -127,9 +127,12 @@ class AdminCommands(commands.Cog):
 
         if float(result['infractions']) + float(infractions) > 2:
             await message.author.add_roles(muted_role)
+
+            to_del = []
             async for old_message in channel.history(limit=100, after=datetime.utcnow() - timedelta(seconds=25)):
                 if old_message.author.id == message.author.id:
-                    await old_message.delete()
+                    to_del.append(old_message)
+            await channel.delete_messages(to_del)
 
             channel = self.client.get_channel(741011181484900464)
 
@@ -146,9 +149,14 @@ class AdminCommands(commands.Cog):
                 time.time(), time.time(), message.guild.id, message.author.id)
 
         else:
-            await self.client.pg_con.execute(
-                "UPDATE infractions SET infractions = $1, last_infraction = $2, last_msg = $3 WHERE guild_id = $4 and user_id = $5",
-                float(infractions) + float(result['infractions']), time.time(), time.time(), message.guild.id, message.author.id)
+            while True:
+                try:
+                    await self.client.pg_con.execute(
+                        "UPDATE infractions SET infractions = $1, last_infraction = $2, last_msg = $3 WHERE guild_id = $4 and user_id = $5",
+                        float(infractions) + float(result['infractions']), time.time(), time.time(), message.guild.id, message.author.id)
+                    break
+                except asyncpg.exceptions.TooManyConnectionsError:
+                    await asyncio.sleep(0.3)
 
         ## DISCORD LINK CHECK
         REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
