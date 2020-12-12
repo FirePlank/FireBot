@@ -2,6 +2,7 @@ import discord
 import random
 import time
 import math
+import asyncpg, asyncio
 from discord.ext import commands
 class AdminCommands(commands.Cog):
 
@@ -11,14 +12,25 @@ class AdminCommands(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.bot or message.content[:2] in ["f.", "p!"] or message.content[0] == ";": return
-        result = await self.client.pg_con.fetchval("SELECT exp_muted FROM level_settings WHERE guild_id = $1", message.guild.id)
+        while True:
+            try:
+                result = await self.client.pg_con.fetchval("SELECT exp_muted FROM level_settings WHERE guild_id = $1", message.guild.id)
+                break
+            except asyncpg.exceptions.TooManyConnectionsError:
+                await asyncio.sleep(0.3)
+
         if not result is None:
             if str(message.channel.id) in result: return
 
         author_id = message.author.id
         guild_id = message.guild.id
 
-        result = await self.client.pg_con.fetchrow("SELECT * FROM levels WHERE guild_id = $1 AND user_id = $2", guild_id, author_id)
+        while True:
+            try:
+                result = await self.client.pg_con.fetchrow("SELECT * FROM levels WHERE guild_id = $1 AND user_id = $2", guild_id, author_id)
+                break
+            except asyncpg.exceptions.TooManyConnectionsError:
+                await asyncio.sleep(0.3)
 
         if not result:
             await self.client.pg_con.execute("INSERT INTO levels(guild_id, user_id, exp, lvl, last_msg) VALUES($1,$2,$3,$4,$5)",  guild_id, author_id, 0, 0, time.time()-60)
