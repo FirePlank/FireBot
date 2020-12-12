@@ -69,7 +69,9 @@ class AdminCommands(commands.Cog):
     async def on_message(self, message):
         channel = message.channel
         content = message.content
-        if message.author.bot or str(channel) == "logs": return
+        staff_role = discord.utils.find(lambda r: r.name.upper() == 'STAFF', message.guild.roles)
+
+        if message.author.bot or str(channel) == "logs" or staff_role in message.author.roles: return
 
         start_time = time.time()
         muted_role = discord.utils.find(lambda r: r.name.upper() == 'MUTED', message.guild.roles)
@@ -98,7 +100,7 @@ class AdminCommands(commands.Cog):
         ## AUTOMOD EMOJI SPAM
         emojis_list = map(lambda x: ''.join(x.split()), UNICODE_EMOJI.keys())
         r = re.compile('|'.join(re.escape(p) for p in emojis_list))
-        emoji_count = len(r.findall(content)) + len(re.findall(r'<[a]*:\w*:\d*>', content))
+        emoji_count = len(r.findall(content)) + len(re.findall(r'<a?:\w*:\d*>', content))
         if emoji_count>5:
             infractions+=emoji_count/10+0.3
 
@@ -117,7 +119,7 @@ class AdminCommands(commands.Cog):
 
         ## AUTOMOD MASS PING
         mentions = len(message.mentions)
-        if mentions > 1:
+        if mentions > 2:
             mentions = len(message.raw_mentions)
             infractions += mentions - (.51*mentions)
             infractions -= (len(content) - (22 * mentions)) * 0.005
