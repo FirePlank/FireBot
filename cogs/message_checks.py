@@ -118,12 +118,12 @@ class AdminCommands(commands.Cog):
             if comment is not None:
                 severe_toxic = comment["SEVERE_TOXICITY"].score
                 toxic = comment["TOXICITY"].score
-                spam = comment["SPAM"].score
+                # spam = comment["SPAM"].score
 
                 if toxic>0.5 and severe_toxic>0.5:
                     if (toxic < severe_toxic or abs(toxic - severe_toxic) < 0.07) and severe_toxic>0.8:infractions+=0.65
                     else:infractions+=0.4
-                if spam>0.5:infractions+=spam
+                # if spam>0.5:infractions+=spam
 
         if float(result['infractions']) + float(infractions) > 2:
             await message.author.add_roles(muted_role)
