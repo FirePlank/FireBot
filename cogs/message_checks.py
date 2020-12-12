@@ -78,8 +78,12 @@ class AdminCommands(commands.Cog):
                 break
             except asyncpg.exceptions.TooManyConnectionsError:
                 await asyncio.sleep(0.3)
-        infractions = 0
 
+        if not result:
+            await self.client.pg_con.execute("INSERT INTO infractions(guild_id, user_id, infractions, last_infraction, last_msg) VALUES($1,$2,$3,$4,$5)", message.guild.id, message.author.id, 0, time.time()-20, time.time()-2)
+            result = await self.client.pg_con.fetchrow("SELECT * FROM infractions WHERE guild_id = $1 AND user_id = $2", message.guild.id, message.author.id)
+
+        infractions = 0
         if float(time.time()) - float(result['last_infraction']) > 20:
             await self.client.pg_con.execute(
                 "UPDATE infractions SET infractions = $1 WHERE guild_id = $2 and user_id = $3", 0, message.guild.id,
@@ -90,10 +94,6 @@ class AdminCommands(commands.Cog):
             infractions+=0.4
 
         ## AUTOMOD MASS PING
-        if not result:
-            await self.client.pg_con.execute("INSERT INTO infractions(guild_id, user_id, infractions, last_infraction, last_msg) VALUES($1,$2,$3,$4,$5)", message.guild.id, message.author.id, 0, time.time()-20, time.time()-2)
-            result = await self.client.pg_con.fetchrow("SELECT * FROM infractions WHERE guild_id = $1 AND user_id = $2", message.guild.id, message.author.id)
-
         mentions = len(message.mentions)
         if mentions > 1:
             mentions = len(message.raw_mentions)
