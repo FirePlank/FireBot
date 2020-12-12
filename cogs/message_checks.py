@@ -69,7 +69,9 @@ class AdminCommands(commands.Cog):
         channel = message.channel
         if message.author.bot or str(channel) == "logs": return
 
+        start_time = time.time()
         muted_role = discord.utils.find(lambda r: r.name.upper() == 'MUTED', message.guild.roles)
+
         while True:
             try:
                 result = await self.client.pg_con.fetchrow("SELECT * FROM infractions WHERE guild_id = $1 AND user_id = $2", message.guild.id, message.author.id)
@@ -82,6 +84,10 @@ class AdminCommands(commands.Cog):
             await self.client.pg_con.execute(
                 "UPDATE infractions SET infractions = $1 WHERE guild_id = $2 and user_id = $3", 0, message.guild.id,
                 message.author.id)
+
+        ## AUTOMOD QUICK MESSAGE
+        if start_time-float(result['last_msg'])<0.6:
+            infractions+=0.4
 
         ## AUTOMOD MASS PING
         if not result:
@@ -106,8 +112,7 @@ class AdminCommands(commands.Cog):
                 try:
                     comment = self.perspective_obj.score(message.content, tests=["TOXICITY", "SEVERE_TOXICITY", "SPAM"], languages=['en'])
                     break
-                except Exception as e:
-                    print(e)
+                except:
                     await asyncio.sleep(0.3)
                     count+=1
             if comment is not None:
@@ -119,10 +124,6 @@ class AdminCommands(commands.Cog):
                     if (toxic < severe_toxic or abs(toxic - severe_toxic) < 0.07) and severe_toxic>0.8:infractions+=0.65
                     else:infractions+=0.4
                 if spam>0.5:infractions+=spam
-
-        ## AUTOMOD QUICK MESSAGE
-        if time.time()-float(result['last_msg'])<0.6:
-            infractions+=0.4
 
         if float(result['infractions']) + float(infractions) > 2:
             await message.author.add_roles(muted_role)

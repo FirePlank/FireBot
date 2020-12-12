@@ -1,7 +1,7 @@
 from discord.ext.commands import BucketType
 from discord.ext import commands
 import os
-import requests
+import httpx as requests
 import json
 import random
 import discord
