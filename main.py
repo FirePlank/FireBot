@@ -1,6 +1,7 @@
 import discord
 import os
 import asyncpg
+import jishaku
 from discord.ext import commands
 
 client = commands.Bot(command_prefix=['f.', 'F.'], case_insensitive=True, intents=discord.Intents.all())
@@ -14,6 +15,7 @@ async def on_ready():
     for filename in os.listdir('./cogs'):
         if filename.endswith('.py'):
             client.load_extension(f"cogs.{filename[:-3]}")
+    client.load_extension('jishaku')
 
     await client.change_presence(activity=discord.Game("f.help"))
     print("READY!")
@@ -36,7 +38,7 @@ If you want to report something before the cooldown is over or you made a report
     elif isinstance(error, discord.ext.commands.errors.CommandOnCooldown):
         await ctx.send(f"You need to wait {error.retry_after:,.2f} seconds before trying this command again.")
 
-    else: ctx.send(error)
+    else: await ctx.send(error)
 
 client.loop.run_until_complete(create_db_pool())
 client.run(os.environ["discord_token"])

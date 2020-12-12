@@ -6,3 +6,4 @@ httpx==0.16.*
 bs4==0.0.1
 asyncpg
 markdown
+jishaku
