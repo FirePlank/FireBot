@@ -67,11 +67,13 @@ class AdminCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        if isinstance(message.channel, discord.channel.DMChannel): return
         channel = message.channel
         content = message.content
         staff_role = discord.utils.find(lambda r: r.name.upper() == 'STAFF', message.guild.roles)
 
         if message.author.bot or str(channel) == "logs" or staff_role in message.author.roles: return
+        await self.client.process_commands(message)
 
         start_time = time.time()
         muted_role = discord.utils.find(lambda r: r.name.upper() == 'MUTED', message.guild.roles)
@@ -209,15 +211,13 @@ class AdminCommands(commands.Cog):
                 break
             except asyncpg.exceptions.TooManyConnectionsError:
                 await asyncio.sleep(0.3)
-        for column in result:
-            guild = self.client.get_guild(int(column['guild_id']))
+        for row in result:
+            guild = self.client.get_guild(int(row['guild_id']))
             muted_role = discord.utils.find(lambda r: r.name.upper() == 'MUTED', guild.roles)
-            user = guild.get_member(int(column['user_id']))
+            user = guild.get_member(int(row['user_id']))
             if user is None:
-                await self.client.pg_con.execute("DELETE FROM infractions WHERE guild_id = $1 and user_id = $2", column['guild_id'], column['user_id'])
-                return
-
-            if float(time.time())-float(column['last_infraction']) > 1200 and muted_role in user.roles:
+                return await self.client.pg_con.execute("DELETE FROM infractions WHERE guild_id = $1 and user_id = $2", row['guild_id'], row['user_id'])
+            if float(time.time())-float(row['last_infraction']) > 1200 and muted_role in user.roles:
                 await user.remove_roles(muted_role)
 
 
