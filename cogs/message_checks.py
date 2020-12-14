@@ -73,7 +73,6 @@ class AdminCommands(commands.Cog):
         staff_role = discord.utils.find(lambda r: r.name.upper() == 'STAFF', message.guild.roles)
 
         if message.author.bot or str(channel) == "logs" or staff_role in message.author.roles: return
-        await self.client.process_commands(message)
 
         start_time = time.time()
         muted_role = discord.utils.find(lambda r: r.name.upper() == 'MUTED', message.guild.roles)
