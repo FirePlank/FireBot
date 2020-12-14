@@ -12,7 +12,6 @@ class AdminCommands(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.bot or message.content[:2] in ["f.", "p!"] or message.content[0] == ";" or isinstance(message.channel, discord.channel.DMChannel): return
-        await self.client.process_commands(message)
         while True:
             try:
                 result = await self.client.pg_con.fetchval("SELECT exp_muted FROM level_settings WHERE guild_id = $1", message.guild.id)
