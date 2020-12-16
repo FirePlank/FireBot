@@ -93,6 +93,14 @@ class AdminCommands(commands.Cog):
             await self.client.pg_con.execute(
                 "UPDATE infractions SET infractions = $1 WHERE guild_id = $2 and user_id = $3", 0, message.guild.id,
                 message.author.id)
+            while True:
+                try:
+                    result = await self.client.pg_con.fetchrow(
+                        "SELECT * FROM infractions WHERE guild_id = $1 AND user_id = $2", message.guild.id,
+                        message.author.id)
+                    break
+                except asyncpg.exceptions.TooManyConnectionsError:
+                    await asyncio.sleep(0.3)
 
         ## AUTOMOD QUICK MESSAGE
         if start_time-float(result['last_msg'])<0.4:
@@ -127,27 +135,43 @@ class AdminCommands(commands.Cog):
             infractions = round(infractions, 2)
 
         ## AUTOMOD FILTER
-        if not message.embeds and not message.author.bot:
-            count = 0
-            comment = None
-            while count<10:
-                try:
-                    comment = self.perspective_obj.score(content, tests=["TOXICITY", "SEVERE_TOXICITY", "SEXUALLY_EXPLICIT"])
-                    break
-                except:
-                    await asyncio.sleep(0.3)
-                    count+=1
-            if comment is not None:
-                severe_toxic = comment["SEVERE_TOXICITY"].score
-                toxic = comment["TOXICITY"].score
-                sexual = comment["SEXUALLY_EXPLICIT"].score
-                # spam = comment["SPAM"].score
+        count = 0
+        while count<10:
+            comment = self.perspective_obj.score(content, tests=["TOXICITY", "SEVERE_TOXICITY", "SEXUALLY_EXPLICIT"])
+            severe_toxic = comment["SEVERE_TOXICITY"].score
+            toxic = comment["TOXICITY"].score
+            sexual = comment["SEXUALLY_EXPLICIT"].score
+            # spam = comment["SPAM"].score
 
-                if sexual>0.8:infractions+=0.75
-                elif toxic>0.6:
-                    if severe_toxic>0.8:infractions+=0.65
-                    else:infractions+=0.4
-                # if spam>0.5:infractions+=spam
+            if sexual>0.8:infractions+=0.75
+            elif toxic>0.6:
+                if severe_toxic>0.8:infractions+=0.65
+                else:infractions+=0.4
+            # if spam>0.5:infractions+=spam
+
+        ## DISCORD LINK CHECK
+        REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
+        links = REGEX.findall(content)
+        if links:
+            ignore = False
+            for invite in await message.guild.invites():
+                if str(invite) == str(content).strip():
+                    ignore = True
+                    break
+            if not ignore:
+                await message.delete()
+                infractions+=0.6
+
+                channel = self.client.get_channel(741011181484900464)
+                staff = discord.utils.get(message.guild.roles, id=749953613773930497)
+
+                embed = discord.Embed(colour=discord.Colour.red())
+
+                embed.add_field(name=f'__**A discord link has been detected!**__', value=f"Sender: <@{message.author.id}>", inline=False)
+                embed.add_field(name=f"Msg: {content}", value=f"Link to msg: {message.jump_url}", inline=False)
+                embed.set_footer(text=f"ID: {message.author.id}")
+                await channel.send(staff.mention, embed=embed)
+                await message.author.send(f"You are not allowed to send discord invites in this server. If you believe this was a mistake please contact staff.\nYour messsage: **{content}**")
 
         if float(result['infractions']) + float(infractions) > 2:
             await message.author.add_roles(muted_role)
@@ -165,10 +189,12 @@ class AdminCommands(commands.Cog):
                                   description=f"**{message.author}** has been muted for 20 minutes for getting too many mini-infractions in 20 seconds.")
             await channel.send(embed=embed)
 
-            await message.author.send(f"You have been muted in **{message.guild}** for 20 minutes for getting too many mini-infractions in 20 seconds.")
+            await message.author.send(
+                f"You have been muted in **{message.guild}** for 20 minutes for getting too many mini-infractions in 20 seconds.")
 
             await self.client.pg_con.execute(
-                "UPDATE infractions SET infractions = $1, last_infraction = $2, last_msg = $3 WHERE guild_id = $4 and user_id = $5", 0,
+                "UPDATE infractions SET infractions = $1, last_infraction = $2, last_msg = $3 WHERE guild_id = $4 and user_id = $5",
+                0,
                 time.time(), time.time(), message.guild.id, message.author.id)
 
         else:
@@ -176,31 +202,11 @@ class AdminCommands(commands.Cog):
                 try:
                     await self.client.pg_con.execute(
                         "UPDATE infractions SET infractions = $1, last_infraction = $2, last_msg = $3 WHERE guild_id = $4 and user_id = $5",
-                        float(infractions) + float(result['infractions']), time.time(), time.time(), message.guild.id, message.author.id)
+                        float(infractions) + float(result['infractions']), time.time(), time.time(), message.guild.id,
+                        message.author.id)
                     break
                 except asyncpg.exceptions.TooManyConnectionsError:
                     await asyncio.sleep(0.3)
-
-        ## DISCORD LINK CHECK
-        REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
-        links = REGEX.findall(content)
-        if links:
-            for invite in await message.guild.invites():
-                if str(invite) == str(content).strip():
-                    return
-
-            await message.delete()
-
-            channel = self.client.get_channel(741011181484900464)
-            staff = discord.utils.get(message.guild.roles, id=749953613773930497)
-
-            embed = discord.Embed(colour=discord.Colour.red())
-
-            embed.add_field(name=f'__**A discord link has been detected!**__', value=f"Sender: <@{message.author.id}>", inline=False)
-            embed.add_field(name=f"Msg: {content}", value=f"Link to msg: {message.jump_url}", inline=False)
-            embed.set_footer(text=f"ID: {message.author.id}")
-            await channel.send(staff.mention, embed=embed)
-            await message.author.send(f"You are not allowed to send discord invites in this server. If you believe this was a mistake please contact staff.\nYour messsage: **{content}**")
 
     @tasks.loop(seconds=20)
     async def check(self):
