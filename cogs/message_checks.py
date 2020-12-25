@@ -138,7 +138,7 @@ class AdminCommands(commands.Cog):
         count = 0
         while count<10:
             try:
-                comment = self.perspective_obj.score(content, tests=["TOXICITY", "SEVERE_TOXICITY", "SEXUALLY_EXPLICIT"])
+                comment = self.perspective_obj.score(content, tests=["TOXICITY", "SEVERE_TOXICITY", "SEXUALLY_EXPLICIT"], timeout=2.3)
                 severe_toxic = comment["SEVERE_TOXICITY"].score
                 toxic = comment["TOXICITY"].score
                 sexual = comment["SEXUALLY_EXPLICIT"].score
@@ -152,7 +152,7 @@ class AdminCommands(commands.Cog):
                     else:
                         infractions += 0.4
                 # if spam>0.5:infractions+=spam
-            except cogs.perspective.perspective.PerspectiveAPIException:pass
+            except:print("rywy")
 
         ## DISCORD LINK CHECK
         REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
@@ -177,7 +177,7 @@ class AdminCommands(commands.Cog):
                 embed.set_footer(text=f"ID: {message.author.id}")
                 await channel.send(staff.mention, embed=embed)
                 await message.author.send(f"You are not allowed to send discord invites in this server. If you believe this was a mistake please contact staff.\nYour messsage: **{content}**")
-
+        print(infractions)
         if float(result['infractions']) + float(infractions) > 2:
             await message.author.add_roles(muted_role)
 
