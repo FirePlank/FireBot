@@ -175,7 +175,6 @@ class AdminCommands(commands.Cog):
                 embed.set_footer(text=f"ID: {message.author.id}")
                 await channel.send(staff.mention, embed=embed)
                 await message.author.send(f"You are not allowed to send discord invites in this server. If you believe this was a mistake please contact staff.\nYour messsage: **{content}**")
-        print(infractions)
         if float(result['infractions']) + float(infractions) > 2:
             await message.author.add_roles(muted_role)
 
@@ -200,7 +199,7 @@ class AdminCommands(commands.Cog):
                 0,
                 time.time(), time.time(), message.guild.id, message.author.id)
 
-        elif infractions>0:
+        else:
             while True:
                 try:
                     await self.client.pg_con.execute(
