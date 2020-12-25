@@ -137,17 +137,22 @@ class AdminCommands(commands.Cog):
         ## AUTOMOD FILTER
         count = 0
         while count<10:
-            comment = self.perspective_obj.score(content, tests=["TOXICITY", "SEVERE_TOXICITY", "SEXUALLY_EXPLICIT"])
-            severe_toxic = comment["SEVERE_TOXICITY"].score
-            toxic = comment["TOXICITY"].score
-            sexual = comment["SEXUALLY_EXPLICIT"].score
-            # spam = comment["SPAM"].score
+            try:
+                comment = self.perspective_obj.score(content, tests=["TOXICITY", "SEVERE_TOXICITY", "SEXUALLY_EXPLICIT"])
+                severe_toxic = comment["SEVERE_TOXICITY"].score
+                toxic = comment["TOXICITY"].score
+                sexual = comment["SEXUALLY_EXPLICIT"].score
+                # spam = comment["SPAM"].score
 
-            if sexual>0.8:infractions+=0.75
-            elif toxic>0.6:
-                if severe_toxic>0.8:infractions+=0.65
-                else:infractions+=0.4
-            # if spam>0.5:infractions+=spam
+                if sexual > 0.8:
+                    infractions += 0.75
+                elif toxic > 0.6:
+                    if severe_toxic > 0.8:
+                        infractions += 0.65
+                    else:
+                        infractions += 0.4
+                # if spam>0.5:infractions+=spam
+            except cogs.perspective.perspective.PerspectiveAPIException:pass
 
         ## DISCORD LINK CHECK
         REGEX = re.compile('(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]')
@@ -197,7 +202,7 @@ class AdminCommands(commands.Cog):
                 0,
                 time.time(), time.time(), message.guild.id, message.author.id)
 
-        else:
+        elif infractions>0:
             while True:
                 try:
                     await self.client.pg_con.execute(
