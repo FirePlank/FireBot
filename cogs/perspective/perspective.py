@@ -41,7 +41,7 @@ class Perspective(object):
             payload_data["doNotStore"] = do_not_store
         payload = json.dumps(payload_data)
         headers = {'content-type': "application/json"}
-        response = requests.post(url, data=payload, headers=headers, params=querystring)
+        response = requests.post(url, data=payload, headers=headers, params=querystring, timeout=2)
         data = response.json()
         if "error" in data.keys():
             raise PerspectiveAPIException(data["error"]["message"])
