@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from datetime import datetime
 
 
 class HelpfulCommands(commands.Cog):
@@ -8,28 +7,24 @@ class HelpfulCommands(commands.Cog):
         self.client = client
 
     @commands.command()
-    async def whois(self, ctx, user: discord.Member = None):
-        if not user:user=ctx.author
-        image_url = user.avatar_url
-        author = user
-        joined_at = user.joined_at
-        nick = user.nick
-        status = user.status
-        activity = user.activity
-        created_at = user.created_at
+    async def whois(self, ctx, member: discord.Member = None):
+        if not member:  # if member is no mentioned
+            member = ctx.message.author  # set member as the author
+        roles = [role for role in member.roles]
+        embed = discord.Embed(colour=discord.Colour.orange(), timestamp=ctx.message.created_at,
+                              title=str(member))
+        embed.set_thumbnail(url=member.avatar_url)
+        embed.set_footer(text=f"Requested by {ctx.author}")
 
-        joined_at = joined_at.strftime("%d-%m-%Y")
-        created_at = created_at.strftime("%d-%m-%Y")
+        embed.add_field(name="Display Name:", value=member.display_name)
+        embed.add_field(name="ID:", value=member.id)
 
-        message = discord.Embed(color=discord.Colour.orange())
-        message.add_field(name="Account created at:", value=created_at, inline=False)
-        message.add_field(name="Joined at:", value=joined_at, inline=False)
-        message.add_field(name="Nickname", value=nick, inline=False)
-        message.add_field(name="Status:", value=status, inline=False)
-        message.add_field(name="Activity:", value=activity, inline=False)
-        message.set_author(name=author, icon_url=image_url)
+        embed.add_field(name="Created Account On:", value=member.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"))
+        embed.add_field(name="Joined Server On:", value=member.joined_at.strftime("%a, %#d %B %Y, %I:%M %p UTC"))
 
-        await ctx.send(embed=message)
+        embed.add_field(name="Roles:", value="".join([role.mention for role in roles[1:]]))
+        embed.add_field(name="Highest Role:", value=member.top_role.mention)
+        await ctx.send(embed=embed)
 
 
 def setup(client):

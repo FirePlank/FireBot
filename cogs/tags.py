@@ -25,7 +25,7 @@ class Helpful(commands.Cog):
         name = await commands.clean_content().convert(ctx=ctx, argument=name)
         text = await commands.clean_content().convert(ctx=ctx, argument=text)
         result = await self.client.pg_con.fetch("SELECT * FROM tags WHERE guild_id = $1", ctx.guild.id)
-        if len(result)>3:
+        if len(result)>=50:
             return await ctx.send("You can't have more than 50 tags at the moment. Please delete your old ones that are unused with `f.tag delete [name]`")
         for row in result:
             if row['title'] == name:

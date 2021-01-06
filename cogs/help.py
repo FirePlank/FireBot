@@ -32,6 +32,7 @@ class Helpful(commands.Cog):
         embed.add_field(name="f.set_lvl <amount> <user (optional)>", value="Sets the specified user's level to the given amount. Default is your own lvl", inline=False)
         embed.add_field(name="f.set_exp <amount> <user (optional)>", value="Sets the specified user's exp to the given amount. Default is your own exp", inline=False)
         embed.add_field(name="f.clear <amount (optional)> / f.sweep / f.cls / f.clean", value="Deletes the specified amount of messages. Default is 10", inline=False)
+        embed.add_field(name="f.lockdown <channel (optional)>", value="Makes the channel unable/able (toggle) to be spoken in for the verified role", inline=False)
         embed.add_field(name="f.ban <user> <reason (optional)>", value="Bans the specified person. Reason is optional", inline=False)
         embed.add_field(name="f.unban <user> <reason (optional)>", value="Unbans the specified person. Reason is optional", inline=False)
         embed.add_field(name="f.kick <user> <reason (optional)>", value="Kicks the specified person. Reason is optional", inline=False)
@@ -61,6 +62,17 @@ class Helpful(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.orange())
 
         embed.set_author(name="Helpful Commands", icon_url=self.client.user.avatar_url)
+
+        embed.add_field(name="f.tag <tag name>", value="Says the tags desc if the tag exists", inline=False)
+        embed.add_field(name="f.tag create <tag name> <tag desc>", value="Creates the specified tag with the specified desc", inline=False)
+        embed.add_field(name="f.tag delete <tag name>", value="Deletes the specified tag", inline=False)
+        embed.add_field(name="f.tag edit <tag name> <tag desc>", value="Edits the specified tag to the specified desc if you own the tag", inline=False)
+        embed.add_field(name="f.tag rename <tag name> <new tag name>", value="Renames the specified tag if you own it", inline=False)
+        embed.add_field(name="f.tag info <tag name>", value="Gets info on the specified tag", inline=False)
+        embed.add_field(name="f.tag list <user (optional)>", value="Gets the specified person's tags if any", inline=False)
+        embed.add_field(name="f.tag search %<keyword>%", value="Searches the guild's tags for the specifed keyword and sees if any tags have the keyword in their name", inline=False)
+        embed.add_field(name="f.tag all", value="Gets all the tags in the guild", inline=False)
+
         embed.add_field(name="f.members / f.member_count / f.count", value="Tell's the current amount of members on the server", inline=False)
         embed.add_field(name="f.poll <suggestion> / f.suggestion", value="Creates a poll where people can vote by reacting", inline=False)
         embed.add_field(name="f.multi_choice <text> <choice 1> <choice 2> <etc (optional)>", value="Creates a poll where people can vote by reacting to the choices given", inline=False)

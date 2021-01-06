@@ -199,7 +199,7 @@ class AdminCommands(commands.Cog):
                 0,
                 time.time(), time.time(), message.guild.id, message.author.id)
 
-        else:
+        elif infractions:
             while True:
                 try:
                     await self.client.pg_con.execute(
