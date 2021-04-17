@@ -13,6 +13,7 @@ It has a buch of fun commands and even more moderation commands!
 * ban: To ban a member
 * unban: To unban a member
 * kick: To kick a member
+* Auto-Mod: Moderates the chat for you in many different ways. I think it's better than Dyno automod
 * welcome: Custom welcome message for your new members
 * Levelling: A bunch of different levelling commands! Includes all MEE6 premium levelling features for free!
 * load/unload: to load/unload a command
