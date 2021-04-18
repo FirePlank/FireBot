@@ -1,5 +1,4 @@
 import discord
-from datetime import datetime
 from discord.ext import commands
 import asyncpg
 
@@ -17,7 +16,7 @@ class AdminCommands(commands.Cog):
             messages = await channel.history(limit=7).flatten()
             for message1 in messages:
                 if message1.author.bot and message.author.id == message1.mentions[0].id:
-                    if datetime.now()-message1.created_at>180:
+                    if ((message.created_at - message1.created_at).total_seconds() / 3600) * 60 * 60 > 180:
                         break
                     await message.delete()
                     return
@@ -38,7 +37,7 @@ class AdminCommands(commands.Cog):
             messages = await channel.history(limit=7).flatten()
             for message1 in messages:
                 if message1.author.bot and message.author.id == message1.mentions[0].id:
-                    if datetime.now()-message1.created_at>180:
+                    if ((message.created_at-message1.created_at).total_seconds()/3600)*60*60 > 180:
                         break
                     await message.delete()
                     return
