@@ -1,4 +1,5 @@
 import discord
+from datetime import datetime
 from discord.ext import commands
 import asyncpg
 
@@ -13,9 +14,11 @@ class AdminCommands(commands.Cog):
         channel = message.channel
         if channel.id == 833089755709308988:
             num = 0
-            messages = await channel.history(limit=10).flatten()
+            messages = await channel.history(limit=7).flatten()
             for message1 in messages:
                 if message1.author.bot and message.author.id == message1.mentions[0].id:
+                    if datetime.now()-message1.created_at>180:
+                        break
                     await message.delete()
                     return
 
@@ -32,9 +35,11 @@ class AdminCommands(commands.Cog):
                 await channel.send(f"{message.author.mention}, You just had to do it! Now we have to start over... From 0 we go.")
 
         elif channel.id == 833090029193658378:
-            messages = await channel.history(limit=10).flatten()
+            messages = await channel.history(limit=7).flatten()
             for message1 in messages:
                 if message1.author.bot and message.author.id == message1.mentions[0].id:
+                    if datetime.now()-message1.created_at>180:
+                        break
                     await message.delete()
                     return
 
