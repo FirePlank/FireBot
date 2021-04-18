@@ -49,7 +49,7 @@ class AdminCommands(commands.Cog):
             elif messages[1].author == message.author:
                 await channel.send(f"{message.author.mention}, Bruh don't say a word two times in a row... Okay we are starting a new story, Let me start,\n\n{article}")
             elif message.content.lower() not in open("cogs/wordlist.txt", 'r').read().lower().splitlines():
-                await channel.send(f"{message.author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\nThe")
+                await channel.send(f"{message.author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\n{article}")
 
         elif channel.id == 833267391944327198:
             if "```" in message.content:
