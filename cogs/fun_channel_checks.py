@@ -1,4 +1,5 @@
 import discord
+import random
 from discord.ext import commands
 import asyncpg
 
@@ -34,6 +35,7 @@ class AdminCommands(commands.Cog):
                 await channel.send(f"{message.author.mention}, You just had to do it! Now we have to start over... From 0 we go.")
 
         elif channel.id == 833090029193658378:
+            article = random.choice(open("cogs/articles.txt").read().splitlines()).lower().capitalize()
             messages = await channel.history(limit=7).flatten()
             for message1 in messages:
                 if message1.author.bot and message.author.id == message1.mentions[0].id:
@@ -43,9 +45,9 @@ class AdminCommands(commands.Cog):
                     return
 
             if len(message.content.split(" ")) > 1:
-                await channel.send(f"{message.author.mention}, Bruh how hard is it to only type one word... Okay we are starting a new story, Let me start,\n\nThe")
+                await channel.send(f"{message.author.mention}, Bruh how hard is it to only type one word... Okay we are starting a new story, Let me start,\n\n{article}")
             elif messages[1].author == message.author:
-                await channel.send(f"{message.author.mention}, Bruh don't say a word two times in a row... Okay we are starting a new story, Let me start,\n\nThe")
+                await channel.send(f"{message.author.mention}, Bruh don't say a word two times in a row... Okay we are starting a new story, Let me start,\n\n{article}")
             elif message.content.lower() not in open("cogs/wordlist.txt", 'r').read().lower().splitlines():
                 await channel.send(f"{message.author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\nThe")
 
@@ -62,6 +64,6 @@ class AdminCommands(commands.Cog):
                     read_file = f.read()
                     f.truncate(0)
                 await channel.send(f"Code completed! The code is:\n```{read_file}```")
-                
+
 def setup(client):
     client.add_cog(AdminCommands(client))
