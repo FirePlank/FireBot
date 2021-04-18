@@ -49,5 +49,19 @@ class AdminCommands(commands.Cog):
             elif message.content.lower() not in open("cogs/wordlist.txt", 'r').read().lower().splitlines():
                 await channel.send(f"{message.author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\nThe")
 
+        elif channel.id == 833267391944327198:
+            if "```" in message.content:
+                code = "\n".join(message.content.split("```")[1].split("\n")[1:-1])
+                with open("cogs/code.txt", 'a') as f:
+                    f.write(code + "\n")
+
+                await channel.send(f"Code added! Code so far:\n```{open('cogs/code.txt', 'r').read()}```")
+
+            elif message.content == "run":
+                with open("cogs/code.txt", 'r+') as f:
+                    read_file = f.read()
+                    f.truncate(0)
+                await channel.send(f"Code completed! The code is:\n```{read_file}```")
+                
 def setup(client):
     client.add_cog(AdminCommands(client))
