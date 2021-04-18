@@ -52,6 +52,7 @@ class AdminCommands(commands.Cog):
     async def on_message_edit(self, before, after):
         channel = before.channel  # Defines the message channel
         if str(channel) == "logs": return
+        elif channel.id == 833089755709308988 or channel.id == 833090029193658378: await after.delete()
         author = before.author  # Defines the message author
         if author.bot: return
         old_content = before.content  # Defines the old message content
