@@ -16,7 +16,7 @@ class AdminCommands(commands.Cog):
             messages = await channel.history(limit=10).flatten()
             for message1 in messages:
                 if message1.author.bot and message.author.id == message1.mentions[0].id:
-                    await message1.delete()
+                    await message.delete()
                     return
 
             if messages[1].author.bot:
