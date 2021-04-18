@@ -176,6 +176,7 @@ class AdminCommands(commands.Cog):
                 embed.set_footer(text=f"ID: {message.author.id}")
                 await channel.send(staff.mention, embed=embed)
                 await message.author.send(f"You are not allowed to send discord invites in this server. If you believe this was a mistake please contact staff.\nYour messsage: **{content}**")
+
         if float(result['infractions']) + float(infractions) > 2:
             await message.author.add_roles(muted_role)
 

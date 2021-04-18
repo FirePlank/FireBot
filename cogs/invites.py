@@ -18,8 +18,7 @@ class AdminCommands(commands.Cog):
         else:
             total_invites = 0
             for i in await ctx.guild.invites():
-                member = ctx.message.guild.get_member_named(user)
-                if i.inviter == member:
+                if i.inviter == user:
                     total_invites += i.uses
 
             await ctx.send(f"{user} has invited {total_invites} member{'' if total_invites == 1 else 's'} to the server!")

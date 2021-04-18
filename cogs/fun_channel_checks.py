@@ -12,6 +12,7 @@ class AdminCommands(commands.Cog):
         if isinstance(message.channel, discord.channel.DMChannel) or message.author.bot: return
         channel = message.channel
         if channel.id == 833089755709308988:
+            num = 0
             messages = await channel.history(limit=10).flatten()
             for message1 in messages:
                 if message1.author.bot and message.author.id == message1.mentions[0].id:
@@ -20,12 +21,11 @@ class AdminCommands(commands.Cog):
 
             if messages[1].author.bot:
                 num = 1
-            else:
-                num = int(messages[1].content)+1
-            if messages[1].author == message.author:
+            elif messages[1].author == message.author:
                 await channel.send(f"{message.author.mention}, Bruh don't say twice in a row. Give someone else a chance as well. Now we have to start over... From 0 we go.")
                 return
             try:
+                num = int(messages[1].content) + 1 if num != 1 else 1
                 if int(message.content) != num:
                     await channel.send(f"{message.author.mention}, You just had to do it! Now we have to start over... From 0 we go.")
             except:
