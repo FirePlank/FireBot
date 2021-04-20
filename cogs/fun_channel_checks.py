@@ -2,6 +2,8 @@ import discord
 import random
 from discord.ext import commands
 import asyncpg
+import requests
+import os
 
 class AdminCommands(commands.Cog):
 
@@ -57,13 +59,32 @@ class AdminCommands(commands.Cog):
                 with open("cogs/code.txt", 'a') as f:
                     f.write(code + "\n")
 
-                await channel.send(f"Code added! Code so far:\n```{open('cogs/code.txt', 'r').read()}```")
+                await channel.send(f"Code added! Code so far:\n```py\n{open('cogs/code.txt', 'r').read()}```")
 
             elif message.content == "run":
                 with open("cogs/code.txt", 'r+') as f:
                     read_file = f.read()
                     f.truncate(0)
-                await channel.send(f"Code completed! The code is:\n```{read_file}```")
+                await channel.send(f"Code completed! The code is:\n```py\n{read_file}```")
+
+                data = {
+                    "script": str(read_file),
+                    "language": "python3",
+                    "versionIndex": "3",
+                    "clientId": os.environ["clientId"],
+                    "clientSecret": os.environ["clientSecret"],
+                    "stdin": ""
+                }
+
+                result = requests.post("https://api.jdoodle.com/v1/execute", json=data).json()
+
+                if result["statusCode"] == 200:
+                    message = f'Execution Time: {result["cpuTime"]}s\nResult:```{result["output"]}```'
+                else:
+                    message = f"Error ({result['statusCode']}): {result['error']}"
+
+                await channel.send(message)
+
 
 def setup(client):
     client.add_cog(AdminCommands(client))
