@@ -47,8 +47,7 @@ class AdminCommands(commands.Cog):
                 messages = await channel.history(limit=200)
                 fetch_message = messages.find(lambda m: m.author == self.client.user)
                 if fetch_message is None:
-                    await channel.send(f"{message.author.mention}, The last story was too large... Okay we are starting a new story, Let me start,\n\n{article}")
-                    return
+                    return await channel.send(f"{message.author.mention}, The last story was too large... Okay we are starting a new story, Let me start,\n\n{article}")
                 story = " ".join(map(lambda m: m.content if (fetch_message.created_at < m.created_at) else '', messages))
                 await channel.send(story)
                 return await channel.send(f"Okay we are starting a new story, Let me start,\n\n{article}")
