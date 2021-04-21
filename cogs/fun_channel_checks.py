@@ -43,7 +43,16 @@ class AdminCommands(commands.Cog):
                         break
                     await message.delete()
                     return
-
+            if message.content.lower() == "the end":
+                messages = await channel.history(limit=200)
+                fetch_message = messages.find(lambda m: m.author == client.user)
+                if fetch_message is None:
+                    await channel.send(f"{message.author.mention}, The last story was too large... Okay we are starting a new story, Let me start,\n\n{article}")
+                    return
+                story = " ".join(map(lambda m: m.content if (fetch_message.created_at < m.created_at) else '', messages))
+                await channel.send(story)
+                await channel.send(f"Okay we are starting a new story, Let me start,\n\n{article}")
+                return
             if len(message.content.split(" ")) > 1:
                 await channel.send(f"{message.author.mention}, Bruh how hard is it to only type one word... Okay we are starting a new story, Let me start,\n\n{article}")
             elif messages[1].author == message.author:
