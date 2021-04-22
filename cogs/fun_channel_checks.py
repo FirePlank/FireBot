@@ -15,26 +15,10 @@ class AdminCommands(commands.Cog):
         if isinstance(message.channel, discord.channel.DMChannel) or message.author.bot: return
         channel = message.channel
         if channel.id == 833089755709308988:
-            num = 0
-            messages = await channel.history(limit=7).flatten()
-            for message1 in messages:
-                if message1.author.bot and message.author.id == message1.mentions[0].id:
-                    if ((message.created_at - message1.created_at).total_seconds() / 3600) * 60 * 60 > 180:
-                        break
-                    await message.delete()
-                    return
+            messages = await channel.history(limit=2).flatten()
 
-            if messages[1].author.bot:
-                num = 1
-            elif messages[1].author == message.author:
-                await channel.send(f"{message.author.mention}, Bruh don't say twice in a row. Give someone else a chance as well. Now we have to start over... From 0 we go.")
-                return
-            try:
-                num = int(messages[1].content) + 1 if num != 1 else 1
-                if int(message.content) != num:
-                    await channel.send(f"{message.author.mention}, You just had to do it! Now we have to start over... From 0 we go.")
-            except:
-                await channel.send(f"{message.author.mention}, You just had to do it! Now we have to start over... From 0 we go.")
+            if int(message.content) != int(messages[1].content) + 1:
+                await message.delete()
 
         elif channel.id == 833090029193658378:
             article = random.choice(open("cogs/articles.txt").read().splitlines()).lower().capitalize()
@@ -79,7 +63,7 @@ class AdminCommands(commands.Cog):
 
                 if result["statusCode"] == 200:
                     message = discord.Embed(title="Compilation Results", colour=discord.Colour.orange())
-                    message.add_field(name="Program Output", value=f'```{result["output"]}```', inline=False)
+                    message.add_field(name="Program Output", value=f'```py\n{result["output"]}```', inline=False)
                     message.add_field(name="Execution Time", value=result["cpuTime"], inline=False)
                     message.set_footer(text=f"Requested by: {message.author} | Powered by Jdoodle")
                 else:
@@ -95,6 +79,10 @@ class AdminCommands(commands.Cog):
                     f.truncate(0)
 
                 await channel.send(f"Code so far:\n```py\n{read_file}```")
+
+            else:
+                await message.delete()
+                await channel.send(f"{message.author.mention}, Please only provide code you want to append to the program and nothing extra!")
 
 def setup(client):
     client.add_cog(AdminCommands(client))
