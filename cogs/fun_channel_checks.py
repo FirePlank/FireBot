@@ -17,7 +17,7 @@ class AdminCommands(commands.Cog):
         if channel.id == 833089755709308988:
             messages = await channel.history(limit=2).flatten()
 
-            if int(message.content) != int(messages[1].content) + 1:
+            if messages[1].author == message.author or int(message.content) != int(messages[1].content) + 1:
                 await message.delete()
 
         elif channel.id == 833090029193658378:
