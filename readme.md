@@ -1,5 +1,4 @@
 # FireBot
-
 ### A simple yet quite powerful bot (which is always on 🔥)
 
 ## Description
