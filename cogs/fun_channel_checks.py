@@ -56,6 +56,16 @@ class AdminCommands(commands.Cog):
                 await channel.send(f"Code added! Code so far:\n```py\n{open('cogs/code.txt', 'r').read()}```")
 
             elif message.content == "run":
+                messages = await channel.history(limit=30).flatten()
+                for message1 in messages:
+                    if message1.author.bot:
+                        for embed in message1.embeds:
+                            if str(the_author) in embed.to_dict()['footer']['text']:
+                                if ((message.created_at - message1.created_at).total_seconds() / 3600) * 60 * 60 < 300:
+                                    await message.delete()
+                                    return await channel.send(
+                                        f"{the_author.mention}, please wait 5 minutes before using the run command again!\nThis is just because we are using a free api that has limited usage.")
+
                 with open("cogs/code.txt", 'r+') as f:
                     read_file = f.read()
                     f.truncate(0)
@@ -75,27 +85,28 @@ class AdminCommands(commands.Cog):
                 result = requests.post("https://api.jdoodle.com/v1/execute", json=data).json()
 
                 if result["statusCode"] == 200:
+                    if len(result["output"]) > 256:
+                        output = result["output"][:257]
+                    else:
+                        output = result["output"]
+
                     message = discord.Embed(title="Compilation Results", colour=discord.Colour.orange())
-                    message.add_field(name="Program Output", value=f'```{result["output"]}```', inline=False)
+                    message.add_field(name="Program Output", value=f'```{output}```', inline=False)
                     message.add_field(name="Execution Time", value=result["cpuTime"], inline=False)
                     message.set_footer(text=f"Requested by: {str(the_author)}  || Powered by Jdoodle")
                 else:
+                    if len(result['error']) > 256:
+                        output = result['error'][:257]
+                    else:
+                        output = result['error']
+                        
                     message = discord.Embed(title="Compilation Results", colour=discord.Colour.blue())
-                    message.add_field(name="Error", value=result['error'], inline=False)
+                    message.add_field(name="Error", value=output, inline=False)
                     message.set_footer(text=f"Requested by: {str(the_author)}  || Powered by Jdoodle")
 
                 await channel.send(embed=message)
 
             elif message.content == "code":
-                messages = await channel.history(limit=30).flatten()
-                for message1 in messages:
-                    if message1.author.bot:
-                        for embed in message1.embeds:
-                            if str(the_author) in embed.to_dict()['footer']['text']:
-                                if ((message.created_at - message1.created_at).total_seconds() / 3600) * 60 * 60 < 300:
-                                    await message.delete()
-                                    return await channel.send(f"{the_author.mention}, please wait 5 minutes before using the run command again!\nThis is just because we are using a free api that has limited usage.")
-
                 with open("cogs/code.txt", 'r+') as f:
                     read_file = f.read()
                     f.truncate(0)
