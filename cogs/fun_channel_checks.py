@@ -1,4 +1,4 @@
-import discord
+import discord, asyncio
 import random
 from discord.ext import commands
 import asyncpg
@@ -50,10 +50,21 @@ class AdminCommands(commands.Cog):
                     await message.delete()
                     return await channel.send(f"{the_author.mention}, please only provide a couple lines of code at once to allow other people to contribute to the program as well!")
 
-                with open("cogs/code.txt", 'a') as f:
-                    f.write(code + "\n")
+                while True:
+                    try:
+                        result = await self.client.pg_con.fetchval("SELECT code FROM games WHERE guild_id = $1", message.guild.id)
+                        break
+                    except asyncpg.exceptions.TooManyConnectionsError:
+                        await asyncio.sleep(0.3)
 
-                await channel.send(f"Code added! Code so far:\n```py\n{open('cogs/code.txt', 'r').read()}```")
+                if not result:
+                    await self.client.pg_con.execute("INSERT INTO games(guild_id, code) VALUES($1,$2)", message.guild.id, "# code here")
+                    result = "# code here"
+
+                code = result + "\n" + code
+                await self.client.pg_con.execute("UPDATE games SET code = $1 WHERE guild_id = $2", code, message.guild.id)
+
+                await channel.send(f"Code added! Code so far:\n```py\n{code}```")
 
             elif message.content == "run":
                 messages = await channel.history(limit=30).flatten()
@@ -62,19 +73,27 @@ class AdminCommands(commands.Cog):
                         for embed in message1.embeds:
                             if str(the_author) in embed.to_dict()['footer']['text']:
                                 if ((message.created_at - message1.created_at).total_seconds() / 3600) * 60 * 60 < 300:
-                                    await message.delete()
                                     return await channel.send(
                                         f"{the_author.mention}, please wait 5 minutes before using the run command again!\nThis is just because we are using a free api that has limited usage.")
 
-                with open("cogs/code.txt", 'r+') as f:
-                    read_file = f.read()
-                    f.truncate(0)
+                while True:
+                    try:
+                        result = await self.client.pg_con.fetchval("SELECT code FROM games WHERE guild_id = $1", message.guild.id)
+                        break
+                    except asyncpg.exceptions.TooManyConnectionsError:
+                        await asyncio.sleep(0.3)
 
-                if read_file == "":
+                if not result:
+                    await self.client.pg_con.execute("INSERT INTO games(guild_id, code) VALUES($1,$2)", message.guild.id, "# code here")
+                    result = "# code here"
+                else:
+                    await self.client.pg_con.execute("UPDATE games SET code = $1 WHERE guild_id = $2", "# code here", message.guild.id)
+
+                if result == "# code here":
                     return await channel.send(f"{the_author.mention}, there is no code to run! Please provide it first.")
 
                 data = {
-                    "script": str(read_file),
+                    "script": result,
                     "language": "python3",
                     "versionIndex": "3",
                     "clientId": os.environ["clientId"],
@@ -82,24 +101,24 @@ class AdminCommands(commands.Cog):
                     "stdin": ""
                 }
 
-                result = requests.post("https://api.jdoodle.com/v1/execute", json=data).json()
+                result1 = requests.post("https://api.jdoodle.com/v1/execute", json=data).json()
 
-                if result["statusCode"] == 200:
-                    if len(result["output"]) > 256:
-                        output = result["output"][:257]
+                if result1["statusCode"] == 200:
+                    if len(result1["output"]) > 256:
+                        output = result1["output"][:257]
                     else:
-                        output = result["output"]
+                        output = result1["output"]
 
                     message = discord.Embed(title="Compilation Results", colour=discord.Colour.orange())
                     message.add_field(name="Program Output", value=f'```{output}```', inline=False)
-                    message.add_field(name="Execution Time", value=result["cpuTime"], inline=False)
+                    message.add_field(name="Execution Time", value=result1["cpuTime"] + "s", inline=False)
                     message.set_footer(text=f"Requested by: {str(the_author)}  || Powered by Jdoodle")
                 else:
-                    if len(result['error']) > 256:
-                        output = result['error'][:257]
+                    if len(result1['error']) > 256:
+                        output = result1['error'][:257]
                     else:
-                        output = result['error']
-                        
+                        output = result1['error']
+
                     message = discord.Embed(title="Compilation Results", colour=discord.Colour.blue())
                     message.add_field(name="Error", value=output, inline=False)
                     message.set_footer(text=f"Requested by: {str(the_author)}  || Powered by Jdoodle")
@@ -107,11 +126,14 @@ class AdminCommands(commands.Cog):
                 await channel.send(embed=message)
 
             elif message.content == "code":
-                with open("cogs/code.txt", 'r+') as f:
-                    read_file = f.read()
-                    f.truncate(0)
+                while True:
+                    try:
+                        result = await self.client.pg_con.fetchval("SELECT code FROM games WHERE guild_id = $1", message.guild.id)
+                        break
+                    except asyncpg.exceptions.TooManyConnectionsError:
+                        await asyncio.sleep(0.3)
 
-                await channel.send(f"Code so far:\n```py\n{read_file}```")
+                await channel.send(f"Code so far:\n```py\n{str(result)}```")
 
             else:
                 await message.delete()
