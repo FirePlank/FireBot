@@ -47,6 +47,7 @@ class AdminCommands(commands.Cog):
 
                 code = "\n".join(message.content.split("```")[1].split("\n")[1:-1])
                 if code.count("\n") > 1:
+                    await message.delete()
                     return await channel.send(f"{the_author.mention}, please only provide a couple lines of code at once to allow other people to contribute to the program as well!")
 
                 with open("cogs/code.txt", 'a') as f:
@@ -92,6 +93,7 @@ class AdminCommands(commands.Cog):
                         for embed in message1.embeds:
                             if str(the_author) in embed.to_dict()['footer']['text']:
                                 if ((message.created_at - message1.created_at).total_seconds() / 3600) * 60 * 60 < 300:
+                                    await message.delete()
                                     return await channel.send(f"{the_author.mention}, please wait 5 minutes before using the run command again!\nThis is just because we are using a free api that has limited usage.")
 
                 with open("cogs/code.txt", 'r+') as f:
