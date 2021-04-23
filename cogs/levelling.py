@@ -9,60 +9,6 @@ class AdminCommands(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot or message.content[:2] in ["f.", "p!"] or message.content[0] == ";" or isinstance(message.channel, discord.channel.DMChannel): return
-        while True:
-            try:
-                result = await self.client.pg_con.fetchval("SELECT exp_muted FROM level_settings WHERE guild_id = $1", message.guild.id)
-                break
-            except asyncpg.exceptions.TooManyConnectionsError:
-                await asyncio.sleep(0.3)
-
-        if not result is None:
-            if str(message.channel.id) in result: return
-
-        author_id = message.author.id
-        guild_id = message.guild.id
-
-        while True:
-            try:
-                result = await self.client.pg_con.fetchrow("SELECT * FROM levels WHERE guild_id = $1 AND user_id = $2", guild_id, author_id)
-                break
-            except asyncpg.exceptions.TooManyConnectionsError:
-                await asyncio.sleep(0.3)
-
-        if not result:
-            await self.client.pg_con.execute("INSERT INTO levels(guild_id, user_id, exp, lvl, last_msg) VALUES($1,$2,$3,$4,$5)",  guild_id, author_id, 0, 0, time.time()-60)
-            result = await self.client.pg_con.fetchrow("SELECT * FROM levels WHERE guild_id = $1 AND user_id = $2", guild_id, author_id)
-
-        if time.time()-int(float(result["last_msg"]))>60:
-            result2 = await self.client.pg_con.fetchrow("SELECT * FROM level_settings WHERE guild_id = $1", guild_id)
-            if result2 is None:
-                await self.client.pg_con.execute("INSERT INTO level_settings(guild_id, multiplier) VALUES($1, $2)", guild_id, 1)
-                result2 = await self.client.pg_con.fetchrow("SELECT * FROM level_settings WHERE guild_id = $1", guild_id)
-
-            exp = int(result["exp"])
-            multiplier = int(result2["multiplier"])
-
-            if len(message.content) > 100: message_addon = 100/2.5
-            else: message_addon = round(len(message.content)/2.5)
-            new_exp = (exp+random.randint(10,20)*multiplier)+message_addon
-            await self.client.pg_con.execute("UPDATE levels SET exp = $1, last_msg = $2 WHERE guild_id = $3 and user_id = $4", new_exp, time.time(), guild_id, author_id)
-
-            result2 = await self.client.pg_con.fetchrow("SELECT * FROM levels WHERE guild_id = $1 AND user_id = $2", guild_id, author_id)
-            exp_start = int(result2["exp"])
-            lvl_start = int(result2["lvl"])
-            exp_end = math.floor(5 * (lvl_start ** 2) + 50 * lvl_start + 100)
-
-            if exp_end<exp_start:
-                await self.client.pg_con.execute("UPDATE levels SET lvl = $1, exp = $2 WHERE guild_id = $3 and user_id = $4", lvl_start + 1, exp_start - exp_end, guild_id, author_id)
-
-                if lvl_start+1 == 5: await message.author.add_roles(discord.utils.get(message.author.guild.roles, id=749699380214366318)) ## TODO change these hardcoded roles to server specific
-                elif lvl_start+1 == 10: await message.author.add_roles(discord.utils.get(message.author.guild.roles, id=741008881563467989)) ## TODO change these hardcoded roles to server specific
-                elif lvl_start+1 == 20: await message.author.add_roles(discord.utils.get(message.author.guild.roles, id=741008953911017553)) ## TODO change these hardcoded roles to server specific
-                elif lvl_start+1 == 30: await message.author.add_roles(discord.utils.get(message.author.guild.roles, id=752222222269284456))  ## TODO change these hardcoded roles to server specific
-
     @commands.command()
     async def rank(self, ctx, user:discord.User=None):
         if user is None:
