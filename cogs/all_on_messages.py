@@ -246,7 +246,11 @@ class AdminCommands(commands.Cog):
                     await message.delete()
                     return
 
-                code = "\n".join(message.content.split("```")[1].split("\n")[1:-1])
+                if message.content.count("\n") == 0:
+                    code = message.content.split("```")[1]
+                else:
+                    code = "\n".join(message.content.split("```")[1].split("\n")[1:]).split("```")[0]
+
                 if code.count("\n") > 1:
                     await message.delete()
                     return await channel.send(f"{the_author.mention}, please only provide a couple lines of code at once to allow other people to contribute to the program as well!")
