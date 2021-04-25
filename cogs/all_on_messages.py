@@ -251,7 +251,7 @@ class AdminCommands(commands.Cog):
                 else:
                     code = "\n".join(message.content.split("```")[1].split("\n")[1:]).split("```")[0]
 
-                if code.count("\n") > 1:
+                if code.count("\n") > 1 or code.count(";") > 1:
                     await message.delete()
                     return await channel.send(f"{the_author.mention}, please only provide a couple lines of code at once to allow other people to contribute to the program as well!")
 
@@ -313,6 +313,8 @@ class AdminCommands(commands.Cog):
                         output = result1["output"][:257]
                     else:
                         output = result1["output"]
+
+                    if output == "":output = "No Output"
 
                     message = discord.Embed(title="Compilation Results", colour=discord.Colour.orange())
                     message.add_field(name="Program Output", value=f'```{output}```', inline=False)
