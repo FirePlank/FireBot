@@ -11,7 +11,6 @@ client.remove_command('help')
 async def create_db_pool():
     client.pg_con = await asyncpg.create_pool(host='kandula.db.elephantsql.com', user='jpwppotb', password=os.environ["database_pass"], database='jpwppotb', min_size=1, max_size=5)
 
-
 @client.event
 async def on_ready():
     for filename in os.listdir('./cogs'):

@@ -141,9 +141,9 @@ class AdminCommands(commands.Cog):
             current_exp = int(result["exp"])
 
             while amount - current_exp > 0:
-                level_at -= 1
                 amount -= current_exp
                 current_exp = math.floor(5 * (level_at ** 2) + 50 * level_at + 100)
+                level_at -= 1
 
             current_exp -= amount
 
