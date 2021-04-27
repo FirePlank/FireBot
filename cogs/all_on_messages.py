@@ -308,12 +308,15 @@ class AdminCommands(commands.Cog):
                     embed = discord.Embed(title="You can't invite yourself or a discord bot to a chess battle!")
                 await channel.send(embed=embed)
 
-                white = message.author
                 def check(m):
-                    global black
+                    global black, white
                     if not challenged:
-                        if m.content.lower() == 'accept' and not m.author.bot and m.channel == channel:
-                            black = m.author
+                        if m.content.lower() == 'accept' and not m.author.bot and m.author != the_author and m.channel == channel:
+                            black = random.choice([m.author, message.author])
+                            if message.author == black:
+                                white = m.author
+                            else:
+                                white = message.author
                             return True
                     else:
                         if m.content.lower() == 'accept' and not m.author.bot and m.author == challenged and m.channel == channel:
