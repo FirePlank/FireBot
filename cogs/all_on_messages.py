@@ -330,7 +330,6 @@ class AdminCommands(commands.Cog):
                     embed.set_image(url="attachment://image.png")
                     embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
                     await channel.send(file=file, embed=embed)
-                    os.system("cls")
                     start = time.time()
                     while True:
                         try:
