@@ -320,7 +320,7 @@ class AdminCommands(commands.Cog):
                     await self.client.wait_for('message', check=check, timeout=60)
                     board = chess.Board()
 
-                    boardsvg = chess.svg.board(board=board)
+                    boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK)
                     f = open("board.svg", "w")
                     f.write(boardsvg)
                     f.close()
@@ -341,7 +341,7 @@ class AdminCommands(commands.Cog):
                                 who_moves = other
                                 other = cp
 
-                                boardsvg = chess.svg.board(board=board)
+                                boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK)
                                 f = open("board.svg", "w")
                                 f.write(boardsvg)
                                 f.close()
