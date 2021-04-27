@@ -35,11 +35,8 @@ class AdminCommands(commands.Cog):
             if message.author.id == 302050872383242240:
                 for embed in message.embeds:
                     if "Bump done" in embed.to_dict()['description']:
-                        try:
-                            await self.client.pg_con.execute(
-                                "UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time(), message.guild.id)
-                        except:
-                            await self.client.pg_con.execute("INSERT INTO misc(boost_timer, guild_id) VALUES($1,$2)", time.time(), message.guild.id)
+                        await self.client.pg_con.execute("UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time(), message.guild.id)
+
                         amount = 200
                         user_id = int(embed.to_dict()['description'][2:20])
 
