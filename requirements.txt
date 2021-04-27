@@ -9,3 +9,4 @@ markdown
 jishaku
 requests
 python-chess
+svglib
