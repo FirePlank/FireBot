@@ -20,11 +20,65 @@ class AdminCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        if isinstance(message.channel, discord.channel.DMChannel): return
+        channel = message.channel
+
+        ################################################################################################################
+        #                                           BOOST CHECKER
+        ################################################################################################################
+
+        if channel.id == 836525964715884554:
+            if message.author.id == 302050872383242240:
+                for embed in message.embeds:
+                    if "Bump done" in embed.to_dict()['description']:
+                        try:
+                            await self.client.pg_con.execute(
+                                "UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time(), message.guild.id)
+                        except:
+                            await self.client.pg_con.execute("INSERT INTO misc(boost_timer, guild_id) VALUES($1,$2)", time.time(), message.guild.id)
+                        amount = 200
+                        user_id = int(embed.to_dict()['description'][2:20])
+
+                        result = await self.client.pg_con.fetchrow(
+                            "SELECT * FROM levels WHERE guild_id = $1 and user_id = $2",
+                            message.guild.id, user_id)
+                        if result is None:
+                            experience_needed = 100
+                            level_at = 0
+
+                            while amount >= experience_needed:
+                                level_at += 1
+                                amount -= experience_needed
+
+                            await self.client.pg_con.execute(
+                                "INSERT INTO levels(guild_id, user_id, exp, lvl, last_msg) VALUES($1,$2,$3,$4,$5)",
+                                message.guild.id, user_id,
+                                amount, level_at, time.time() - 60)
+                        else:
+                            level_at = int(result["lvl"])
+                            current_exp = int(result["exp"])
+                            experience_needed = math.floor(5 * (level_at ** 2) + 50 * level_at + 100)
+
+                            went = False
+                            while amount - (experience_needed - current_exp) > 0:
+                                level_at += 1
+                                experience_needed = math.floor(5 * (level_at ** 2) + 50 * level_at + 100)
+                                amount -= experience_needed - current_exp
+                                current_exp = 0
+
+                            if not went:
+                                amount += current_exp
+
+                            await self.client.pg_con.execute(
+                                "UPDATE levels SET exp = $1, lvl = $2 WHERE guild_id = $3 and user_id = $4",
+                                abs(amount), level_at, message.guild.id, user_id)
+
+                        return await channel.send(f"congratulations <@{user_id}> for getting a 200 exp bonus for your boost!")
+
         ################################################################################################################
         #                                           AUTO MODERATION
         ################################################################################################################
 
-        if isinstance(message.channel, discord.channel.DMChannel): return
         channel = message.channel
         content = message.content
         staff_role = discord.utils.find(lambda r: r.name.upper() == 'STAFF', message.guild.roles)
@@ -238,6 +292,23 @@ class AdminCommands(commands.Cog):
                 await channel.send(f"{the_author.mention}, Bruh don't say a word two times in a row... Okay we are starting a new story, Let me start,\n\n{article}")
             elif message.content.lower() not in open("cogs/wordlist.txt", 'r').read().lower().splitlines():
                 await channel.send(f"{the_author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\n{article}")
+
+        elif channel.id == 836512663612686357:
+            if message.content == "challenge":
+                embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange(), description=f"{the_author.mention} is inviting anyone to a chess battle!\n\nType `accept` now to accept the challenge and begin a game with them.")
+                await channel.send(embed=embed)
+
+                def check(m):
+                    global message_thing
+                    if m.content.lower() == 'accept' and m.author != the_author:
+                        return True
+
+                try:
+                    await self.client.wait_for('message', check=check, timeout=60)
+                    await channel.send("accepted")
+
+                except asyncio.TimeoutError:
+                    await channel.send(embed=discord.Embed(title="Challenge timeout. Try again later...", color=discord.Color.red()))
 
         elif channel.id == 833267391944327198:
             if "```" in message.content:

@@ -77,6 +77,23 @@ class AdminCommands(commands.Cog):
             if float(time.time())-float(row['last_infraction']) > 1200 and muted_role in user.roles:
                 await user.remove_roles(muted_role)
 
+        # ALSO CHECKING FOR IF ITS TIME TO BOOST CUZ THIS IS THE ONLY TASKS.LOOP :uganda:
+        while True:
+            try:
+                result = await self.client.pg_con.fetch("SELECT boost_timer, guild_id FROM misc")
+                break
+            except asyncpg.exceptions.TooManyConnectionsError:
+                await asyncio.sleep(0.3)
+
+        for row in result:
+            boost_time = int(row['boost_timer'])
+            if time.time()-boost_time > 7200:
+                guild = self.client.get_guild(int(row['guild_id']))
+                channel = guild.get_channel(836525964715884554)
+                await channel.send("<@&836601479665025025> it's time to boost the server! First one to do so gains 200 exp!")
+                await self.client.pg_con.execute(
+                    "UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time()-6600, guild.id)
+
 
 def setup(client):
     client.add_cog(AdminCommands(client))
