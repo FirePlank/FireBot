@@ -39,7 +39,7 @@ class AdminCommands(commands.Cog):
                     if "Bump done" in embed.to_dict()['description']:
                         await self.client.pg_con.execute("UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time(), message.guild.id)
 
-                        amount = 200
+                        amount = 150
                         user_id = int(embed.to_dict()['description'][2:20])
 
                         result = await self.client.pg_con.fetchrow(
@@ -76,7 +76,7 @@ class AdminCommands(commands.Cog):
                                 "UPDATE levels SET exp = $1, lvl = $2 WHERE guild_id = $3 and user_id = $4",
                                 abs(amount), level_at, message.guild.id, user_id)
 
-                        return await channel.send(f"congratulations <@{user_id}> for getting a 200 exp bonus for your boost!")
+                        return await channel.send(f"Congratulations <@{user_id}> for getting a 150 exp bonus for boosting!")
 
         ################################################################################################################
         #                                           AUTO MODERATION
