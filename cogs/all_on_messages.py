@@ -11,6 +11,8 @@ import re
 import time
 import chess
 import chess.svg
+import chess.pgn
+from datetime import date
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 from discord.ext import commands
@@ -310,7 +312,7 @@ class AdminCommands(commands.Cog):
                 def check(m):
                     global black
                     if not challenged:
-                        if m.content.lower() == 'accept' and not m.author.bot and m.author != white and m.channel == channel:
+                        if m.content.lower() == 'accept' and not m.author.bot and m.channel == channel:
                             black = m.author
                             return True
                     else:
@@ -327,6 +329,12 @@ class AdminCommands(commands.Cog):
                 try:
                     await self.client.wait_for('message', check=check, timeout=60)
                     board = chess.Board()
+                    game = chess.pgn.Game()
+                    game.headers["White"] = white.name
+                    game.headers["Black"] = black.name
+                    game.headers["Site"] = "The Fire Army Discord Server"
+                    today = date.today()
+                    game.headers["Date"] = today.strftime("%Y.%m.%d")
 
                     boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK)
                     f = open("board.svg", "w")
@@ -340,18 +348,29 @@ class AdminCommands(commands.Cog):
                     embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
                     await channel.send(file=file, embed=embed)
                     start = time.time()
+                    first_move = True
                     while True:
                         try:
                             if time.time()-start > 60:
-                                return await channel.send(embed=discord.Embed(title=f"Move timeout, {black if board.turn else white} wins!",
+                                await channel.send(embed=discord.Embed(title=f"Move timeout, {black if board.turn else white} wins!",
                                                                        color=discord.Color.red()))
+                                game.headers["Result"] = "0-1" if board.turn else "1-0"
+                                return await channel.send(f"Game PGN:\n```{game}```")
                             await self.client.wait_for('message', check=game_check, timeout=60)
                             try:
                                 if the_message == "resign":
-                                    return await channel.send(embed=discord.Embed(
+                                    await channel.send(embed=discord.Embed(
                                         title=f"{white if board.turn else black} resigns! {black if board.turn else white} wins!",
                                         color=discord.Color.red()))
-                                board.push_san(the_message)
+                                    game.headers["Result"] = "0-1" if board.turn else "1-0"
+                                    return await channel.send(f"Game PGN:\n```{game}```")
+
+                                move = board.push_san(the_message)
+                                if first_move:
+                                    node = game.add_variation(move)
+                                    first_move = False
+                                else:
+                                    node = node.add_variation(move)
 
                                 boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
                                 f = open("board.svg", "w")
@@ -360,15 +379,29 @@ class AdminCommands(commands.Cog):
                                 drawing = svg2rlg("board.svg")
                                 renderPM.drawToFile(drawing, "board.png", fmt="PNG")
                                 file = discord.File("board.png", filename="image.png")
-                                embed = discord.Embed(title=f"{white} vs {black}", color=discord.Colour.orange())
+                                embed = discord.Embed(title=f"{white} (WHITE) vs {black} (BLACK)", color=discord.Colour.orange())
                                 embed.set_image(url="attachment://image.png")
                                 embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
                                 await channel.send(file=file, embed=embed)
+
+                                if board.is_game_over():
+                                    if board.result() == "1-0":
+                                        await channel.send(embed=discord.Embed(title=f"{white} wins!", color=discord.Color.green()))
+                                    elif board.result() == "0-1":
+                                        await channel.send(embed=discord.Embed(title=f"{black} wins!", color=discord.Color.green()))
+                                    else:
+                                        await channel.send(embed=discord.Embed(title=f"It's a draw!", color=discord.Color.orange()))
+
+                                    game.headers["Result"] = board.result()
+                                    return await channel.send(f"Game PGN:\n```{game}```")
+
                                 start = time.time()
                             except:
                                 await channel.send("Invalid move! Please try again.")
                         except asyncio.TimeoutError:
-                            return await channel.send(embed=discord.Embed(title=f"Move timeout, {black if board.turn else white} wins!", color=discord.Color.red()))
+                            await channel.send(embed=discord.Embed(title=f"Move timeout, {black if board.turn else white} wins!", color=discord.Color.green()))
+                            game.headers["Result"] = "0-1" if board.turn else "1-0"
+                            return await channel.send(f"Game PGN:\n```{game}```")
 
                 except asyncio.TimeoutError:
                     await channel.send(embed=discord.Embed(title="Challenge timeout. Try again later...", color=discord.Color.red()))
