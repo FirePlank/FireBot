@@ -298,16 +298,28 @@ class AdminCommands(commands.Cog):
                 await channel.send(f"{the_author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\n{article}")
 
         elif channel.id == 836512663612686357:
-            if message.content == "challenge":
-                embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange(), description=f"{the_author.mention} is inviting anyone to a chess battle!\n\nType `accept` now to accept the challenge and begin a game with them.")
+            if message.content.lower().startswith("challenge"):
+                if len(message.mentions) == 0:
+                    embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange(), description=f"{the_author.mention} is inviting anyone to a chess battle!\n\nType `accept` now to accept the challenge and begin a game with them.")
+                    challenged = None
+                elif message.mentions[0] != message.author and not message.mentions[0].bot:
+                    embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange(), description=f"{the_author.mention} is inviting {message.mentions[0].mention} to a chess battle!\n\nType `accept` now to accept the challenge and begin a game with them.")
+                    challenged = message.mentions[0]
+                else:
+                    embed = discord.Embed(title="You can't invite yourself or a discord bot to a chess battle!")
                 await channel.send(embed=embed)
 
                 white = message.author
                 def check(m):
                     global black
-                    if m.content.lower() == 'accept' and not m.author.bot and m.author != white and m.channel == channel:
-                        black = m.author
-                        return True
+                    if not challenged:
+                        if m.content.lower() == 'accept' and not m.author.bot and m.author != white and m.channel == channel:
+                            black = m.author
+                            return True
+                    else:
+                        if m.content.lower() == 'accept' and not m.author.bot and m.author == challenged and m.channel == channel:
+                            black = m.author
+                            return True
 
                 def game_check(m):
                     global the_message
@@ -326,7 +338,7 @@ class AdminCommands(commands.Cog):
                     drawing = svg2rlg("board.svg")
                     renderPM.drawToFile(drawing, "board.png", fmt="PNG")
                     file = discord.File("board.png", filename="image.png")
-                    embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange())
+                    embed = discord.Embed(title=f"{white} vs {black}", color=discord.Colour.orange())
                     embed.set_image(url="attachment://image.png")
                     embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
                     await channel.send(file=file, embed=embed)
@@ -344,14 +356,14 @@ class AdminCommands(commands.Cog):
                                         color=discord.Color.red()))
                                 board.push_san(the_message)
 
-                                boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK)
+                                boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
                                 f = open("board.svg", "w")
                                 f.write(boardsvg)
                                 f.close()
                                 drawing = svg2rlg("board.svg")
                                 renderPM.drawToFile(drawing, "board.png", fmt="PNG")
                                 file = discord.File("board.png", filename="image.png")
-                                embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange())
+                                embed = discord.Embed(title=f"{white} vs {black}", color=discord.Colour.orange())
                                 embed.set_image(url="attachment://image.png")
                                 embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
                                 await channel.send(file=file, embed=embed)
