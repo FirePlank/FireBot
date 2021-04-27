@@ -9,6 +9,10 @@ from datetime import datetime, timedelta
 from cogs.perspective import perspective
 import re
 import time
+import chess
+import chess.svg
+from svglib.svglib import svg2rlg
+from reportlab.graphics import renderPM
 from discord.ext import commands
 
 
@@ -298,14 +302,62 @@ class AdminCommands(commands.Cog):
                 embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange(), description=f"{the_author.mention} is inviting anyone to a chess battle!\n\nType `accept` now to accept the challenge and begin a game with them.")
                 await channel.send(embed=embed)
 
+                other = None
+                who_moves = message.author
                 def check(m):
-                    global message_thing
-                    if m.content.lower() == 'accept' and m.author != the_author:
+                    global other
+                    if m.content.lower() == 'accept' and not m.author.bot and m.author != who_moves and m.channel == channel:
+                        other = m.author
+                        return True
+
+                def game_check(m):
+                    global the_message
+                    the_message = m.content
+                    if not message.author.bot and m.author == who_moves and m.channel == channel:
                         return True
 
                 try:
                     await self.client.wait_for('message', check=check, timeout=60)
-                    await channel.send("accepted")
+                    board = chess.Board()
+
+                    boardsvg = chess.svg.board(board=board)
+                    f = open("board.svg", "w")
+                    f.write(boardsvg)
+                    f.close()
+                    drawing = svg2rlg("board.svg")
+                    renderPM.drawToFile(drawing, "board.png", fmt="PNG")
+                    file = discord.File("board.png", filename="image.png")
+                    embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange())
+                    embed.set_image(url="attachment://image.png")
+                    embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
+                    await channel.send(file=file, embed=embed)
+                    os.system("cls")
+                    while True:
+                        try:
+                            await self.client.wait_for('message', check=game_check, timeout=60)
+                            try:
+                                board.push_san(the_message)
+                                cp = who_moves
+                                who_moves = other
+                                other = cp
+
+                                boardsvg = chess.svg.board(board=board)
+                                f = open("board.svg", "w")
+                                f.write(boardsvg)
+                                f.close()
+                                drawing = svg2rlg("board.svg")
+                                renderPM.drawToFile(drawing, "board.png", fmt="PNG")
+                                file = discord.File("board.png", filename="image.png")
+                                embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange())
+                                embed.set_image(url="attachment://image.png")
+                                embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
+                                await channel.send(file=file, embed=embed)
+                                os.system("cls")
+                            except Exception as e:
+                                await channel.send(e)
+                        except asyncio.TimeoutError:
+                            await channel.send(embed=discord.Embed(title=f"Move timeout, {other} wins!", color=discord.Color.red()))
+                            return
 
                 except asyncio.TimeoutError:
                     await channel.send(embed=discord.Embed(title="Challenge timeout. Try again later...", color=discord.Color.red()))
