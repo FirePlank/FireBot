@@ -302,18 +302,17 @@ class AdminCommands(commands.Cog):
                 embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange(), description=f"{the_author.mention} is inviting anyone to a chess battle!\n\nType `accept` now to accept the challenge and begin a game with them.")
                 await channel.send(embed=embed)
 
-                other = None
-                who_moves = message.author
+                white = message.author
                 def check(m):
-                    global other
-                    if m.content.lower() == 'accept' and not m.author.bot and m.author != who_moves and m.channel == channel:
-                        other = m.author
+                    global black
+                    if m.content.lower() == 'accept' and not m.author.bot and m.author != white and m.channel == channel:
+                        black = m.author
                         return True
 
                 def game_check(m):
                     global the_message
                     the_message = m.content
-                    if not message.author.bot and m.author == who_moves and m.channel == channel:
+                    if not message.author.bot and m.author == (white if board.turn else black) and m.channel == channel:
                         return True
 
                 try:
@@ -332,14 +331,19 @@ class AdminCommands(commands.Cog):
                     embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
                     await channel.send(file=file, embed=embed)
                     os.system("cls")
+                    start = time.time()
                     while True:
                         try:
+                            if time.time()-start > 60:
+                                return await channel.send(embed=discord.Embed(title=f"Move timeout, {black if board.turn else white} wins!",
+                                                                       color=discord.Color.red()))
                             await self.client.wait_for('message', check=game_check, timeout=60)
                             try:
+                                if the_message == "resign":
+                                    return await channel.send(embed=discord.Embed(
+                                        title=f"{white if board.turn else black} resigns! {black if board.turn else white} wins!",
+                                        color=discord.Color.red()))
                                 board.push_san(the_message)
-                                cp = who_moves
-                                who_moves = other
-                                other = cp
 
                                 boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK)
                                 f = open("board.svg", "w")
@@ -352,12 +356,11 @@ class AdminCommands(commands.Cog):
                                 embed.set_image(url="attachment://image.png")
                                 embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
                                 await channel.send(file=file, embed=embed)
-                                os.system("cls")
-                            except Exception as e:
-                                await channel.send(e)
+                                start = time.time()
+                            except:
+                                await channel.send("Invalid move! Please try again.")
                         except asyncio.TimeoutError:
-                            await channel.send(embed=discord.Embed(title=f"Move timeout, {other} wins!", color=discord.Color.red()))
-                            return
+                            return await channel.send(embed=discord.Embed(title=f"Move timeout, {black if board.turn else white} wins!", color=discord.Color.red()))
 
                 except asyncio.TimeoutError:
                     await channel.send(embed=discord.Embed(title="Challenge timeout. Try again later...", color=discord.Color.red()))
