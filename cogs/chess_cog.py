@@ -56,7 +56,7 @@ class FunCommands(commands.Cog):
         while True:
             try:
                 await self.client.wait_for('message', check=check, timeout=180)
-                if the_message.lower() == ("exit"or"quit"or"resign"or"stop"):
+                if the_message.lower() == "exit" or the_message.lower() == "quit" or the_message.lower() == "resign" or the_message.lower() == "stop" or the_message.lower() == "cancel":
                     return await ctx.send(embed=discord.Embed(title=f"Puzzle Cancelled!", color=discord.Colour.red()))
                 try:
                     copy_board = board.copy()
