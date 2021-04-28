@@ -221,6 +221,7 @@ class FunCommands(commands.Cog):
                 embed.set_footer(text=f"Black to move || Black time: {black_time}s")
             msg = await channel.send(file=file, embed=embed)
             first_move = True
+            updater = 1
             while True:
                 try:
                     start = time.time()
@@ -251,6 +252,8 @@ class FunCommands(commands.Cog):
                         else:
                             node = node.add_variation(move)
 
+                        updater = 0
+
                         if board.is_check():
                             boardsvg = chess.svg.board(board=board,
                                                        orientation=chess.WHITE if board.turn else chess.BLACK,
@@ -270,7 +273,7 @@ class FunCommands(commands.Cog):
                         if board.turn:
                             embed.set_footer(text=f"White to move || White time: {round(white_time) if white_time > 20 else round(white_time,2)}s")
                         else:
-                            embed.set_footer(text=f"Black to move || Black time: {round(black_time) if black_time > 20 else round(white_time,2)}s")
+                            embed.set_footer(text=f"Black to move || Black time: {round(black_time) if black_time > 20 else round(black_time,2)}s")
                         msg = await channel.send(file=file, embed=embed)
 
                         if board.is_game_over():
@@ -289,22 +292,28 @@ class FunCommands(commands.Cog):
                 except asyncio.TimeoutError:
                     if board.turn:
                         white_time-=1
-                        if white_time == 0:
+                        if white_time <= 0:
                             await channel.send(embed=discord.Embed(title=f"{white} timeout, {black} wins!", color=discord.Color.red()))
                             game.headers["Result"] = "0-1" if board.turn else "1-0"
                             return await channel.send(f"Game PGN:\n```{game}```")
-                        else:
+                        elif updater >= 5:
+                            updater = 0
                             embed.set_footer(text=f"White to move || White time: {round(white_time) if white_time > 20 else round(white_time,2)}s")
                             await msg.edit(embed=embed)
+                        else:
+                            updater+=1
                     else:
                         black_time-=1
-                        if black_time == 0:
+                        if black_time <= 0:
                             await channel.send(embed=discord.Embed(title=f"{black} timeout, {white} wins!", color=discord.Color.red()))
                             game.headers["Result"] = "0-1" if board.turn else "1-0"
                             return await channel.send(f"Game PGN:\n```{game}```")
-                        else:
-                            embed.set_footer(text=f"Black to move || Black time: {round(black_time) if black_time > 20 else round(white_time,2)}s")
+                        elif updater >= 5:
+                            updater = 0
+                            embed.set_footer(text=f"Black to move || Black time: {round(black_time) if black_time > 20 else round(black_time,2)}s")
                             await msg.edit(embed=embed)
+                        else:
+                            updater+=1
 
         except asyncio.TimeoutError:
             await channel.send(
