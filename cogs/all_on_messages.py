@@ -13,8 +13,6 @@ import chess
 import chess.svg
 import chess.pgn
 from datetime import date
-from svglib.svglib import svg2rlg
-from reportlab.graphics import renderPM
 from discord.ext import commands
 
 
@@ -343,10 +341,9 @@ class AdminCommands(commands.Cog):
                     f = open("board.svg", "w")
                     f.write(boardsvg)
                     f.close()
-                    drawing = svg2rlg("board.svg")
-                    renderPM.drawToFile(drawing, "board.png", fmt="PNG")
+                    os.system("convert -density 200 board.svg board.png")
                     file = discord.File("board.png", filename="image.png")
-                    embed = discord.Embed(title=f"{white} vs {black}", color=discord.Colour.orange())
+                    embed = discord.Embed(title=f"{white} (WHITE) vs {black} (BLACK)", color=discord.Colour.orange())
                     embed.set_image(url="attachment://image.png")
                     embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
                     await channel.send(file=file, embed=embed)
@@ -379,8 +376,7 @@ class AdminCommands(commands.Cog):
                                 f = open("board.svg", "w")
                                 f.write(boardsvg)
                                 f.close()
-                                drawing = svg2rlg("board.svg")
-                                renderPM.drawToFile(drawing, "board.png", fmt="PNG")
+                                os.system("convert -density 200 board.svg board.png")
                                 file = discord.File("board.png", filename="image.png")
                                 embed = discord.Embed(title=f"{white} (WHITE) vs {black} (BLACK)", color=discord.Colour.orange())
                                 embed.set_image(url="attachment://image.png")
