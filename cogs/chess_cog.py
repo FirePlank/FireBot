@@ -3,7 +3,7 @@ import chess.svg
 import chess.pgn
 import random
 import os
-import time
+import csv
 from datetime import date
 import discord, asyncio
 from discord.ext import commands
@@ -12,6 +12,99 @@ class FunCommands(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.first_move = True
+
+    @commands.command()
+    async def chess_puzzle(self, ctx, min_rating: int, max_rating: int):
+        candidates = []
+        with open("cogs/chess_puzzles.csv", 'r') as file:
+            reader = csv.reader(file)
+            for line in reader:
+                if int(line[3])-(int(line[4])//2)>min_rating and int(line[3])+(int(line[4])//2) < max_rating:
+                    candidates.append(line)
+
+        if len(candidates) == 0:
+            return await ctx.send("No results found! Please try to widen your rating range.")
+
+        puzzle = random.choice(candidates)
+        board = chess.Board(fen=puzzle[1])
+        counter = 1
+        moves = puzzle[2].split(" ")
+        board.push_uci(moves[0])
+
+        boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
+        f = open("board.svg", "w")
+        f.write(boardsvg)
+        f.close()
+        os.system("convert -density 200 board.svg board.png")
+        file = discord.File("board.png", filename="image.png")
+        embed = discord.Embed(title=f"Chess Puzzle ({puzzle[3]})", color=discord.Colour.orange())
+        embed.set_image(url="attachment://image.png")
+        embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move || Puzzle link: {puzzle[-1]}")
+        await ctx.send(file=file, embed=embed)
+
+        def check(m):
+            global the_message
+            if m.author == ctx.author:
+                the_message = m.content
+                return True
+
+        while True:
+            try:
+                await self.client.wait_for('message', check=check, timeout=180)
+                try:
+                    copy_board = board.copy()
+                    move = board.push_san(the_message)
+                    if move.uci() == moves[counter]:
+                        if moves[counter] == moves[-1]:
+                            boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
+                            f = open("board.svg", "w")
+                            f.write(boardsvg)
+                            f.close()
+                            os.system("convert -density 200 board.svg board.png")
+                            file = discord.File("board.png", filename="image.png")
+                            embed = discord.Embed(title=f"Puzzle Complete!", color=discord.Colour.orange())
+                            embed.set_image(url="attachment://image.png")
+                            embed.set_footer(
+                                text=f"Puzzle Completed! || Puzzle link: {puzzle[-1]}")
+                            return await ctx.send(file=file, embed=embed)
+
+                        counter+=1
+                        board.push_uci(moves[counter])
+                        counter+=1
+                        boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
+                        f = open("board.svg", "w")
+                        f.write(boardsvg)
+                        f.close()
+                        os.system("convert -density 200 board.svg board.png")
+                        file = discord.File("board.png", filename="image.png")
+                        embed = discord.Embed(title=f"Correct!", color=discord.Colour.orange())
+                        embed.set_image(url="attachment://image.png")
+                        embed.set_footer(
+                            text=f"{'White' if board.turn else 'Black'} to move || Puzzle link: {puzzle[-1]}")
+                        await ctx.send(file=file, embed=embed)
+
+                    else:
+                        counter += 1
+                        copy_board.push_uci(moves[counter])
+                        boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
+                        f = open("board.svg", "w")
+                        f.write(boardsvg)
+                        f.close()
+                        os.system("convert -density 200 board.svg board.png")
+                        file = discord.File("board.png", filename="image.png")
+                        embed = discord.Embed(title=f"Incorrect! Best Move was:", color=discord.Colour.orange())
+                        embed.set_image(url="attachment://image.png")
+                        embed.set_footer(
+                            text=f"Puzzle Failed... || Puzzle link: {puzzle[-1]}")
+                        return await ctx.send(file=file, embed=embed)
+
+                except:
+                    await ctx.send("Invalid move! Please try again.")
+
+            except asyncio.TimeoutError:
+                return await ctx.send(embed=discord.Embed(title="Puzzle timeout! Are you there?", color=discord.Color.red()))
+
+
 
     @commands.command()
     async def chess_challenge(self, ctx, time_format: str = "3+0", user: discord.Member = None):
