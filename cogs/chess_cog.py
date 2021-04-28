@@ -84,15 +84,14 @@ class FunCommands(commands.Cog):
                         await ctx.send(file=file, embed=embed)
 
                     else:
-                        counter += 1
                         copy_board.push_uci(moves[counter])
-                        boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
+                        boardsvg = chess.svg.board(board=copy_board, orientation=chess.BLACK if copy_board.turn else chess.WHITE, lastmove=copy_board.move_stack[-1])
                         f = open("board.svg", "w")
                         f.write(boardsvg)
                         f.close()
                         os.system("convert -density 200 board.svg board.png")
                         file = discord.File("board.png", filename="image.png")
-                        embed = discord.Embed(title=f"Incorrect! Best Move was:", color=discord.Colour.orange())
+                        embed = discord.Embed(title=f"Incorrect! Best move was:", color=discord.Colour.orange())
                         embed.set_image(url="attachment://image.png")
                         embed.set_footer(
                             text=f"Puzzle Failed... || Puzzle link: {puzzle[-1]}")

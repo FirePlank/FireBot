@@ -11,7 +11,6 @@ class Helpful(commands.Cog):
     async def help(self, ctx):
         embed = discord.Embed(colour= discord.Colour.orange())
 
-
         embed.set_author(name="Help Commands", icon_url=self.client.user.avatar_url)
         embed.set_thumbnail(url=self.client.user.avatar_url)
         embed.add_field(name="Fun", value="`f.help fun`")
@@ -31,6 +30,8 @@ class Helpful(commands.Cog):
         embed.add_field(name="f.exp_multiplayer <amount>", value="Sets the speed that people gain exp", inline=False)
         embed.add_field(name="f.set_lvl <amount> <user (optional)>", value="Sets the specified user's level to the given amount. Default is your own lvl", inline=False)
         embed.add_field(name="f.set_exp <amount> <user (optional)>", value="Sets the specified user's exp to the given amount. Default is your own exp", inline=False)
+        embed.add_field(name="f.give_exp <amount> <user (optional)>", value="Gives the specified user the set amount of exp. Default is your own exp", inline=False)
+        embed.add_field(name="f.take_exp <amount> <user (optional)>", value="Takes the specified amount of exp from the specified user. Default is your own exp", inline=False)
         embed.add_field(name="f.clear <amount (optional)> / f.sweep / f.cls / f.clean", value="Deletes the specified amount of messages. Default is 10", inline=False)
         embed.add_field(name="f.lockdown <channel (optional)>", value="Makes the channel unable/able (toggle) to be spoken in for the verified role", inline=False)
         embed.add_field(name="f.ban <user> <reason (optional)>", value="Bans the specified person. Reason is optional", inline=False)
@@ -47,6 +48,8 @@ class Helpful(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.orange())
 
         embed.set_author(name="Fun Commands", icon_url=self.client.user.avatar_url)
+        embed.add_field(name="f.chess_challenge <time format (optional)> <user (optional)>", value="Challenge anyone or no one in particular to a chess game and play them right on discord", inline=False)
+        embed.add_field(name="f.chess_puzzle <min range> <max range>", value="Recieve a chess puzzle within your set rating range to be solved right on discord", inline=False)
         embed.add_field(name="f.8ball <question> / f.magicball / f.eightball / f.enlightenme", value="Ask a question and the magic eight ball will answer you", inline=False)
         embed.add_field(name="f.slap <user>", value="Slaps the specified user", inline=False)
         embed.add_field(name="f.punch <user> / f.hit", value="Punches the specified user", inline=False)
