@@ -3,6 +3,7 @@ import chess.svg
 import chess.pgn
 import random
 import os
+import time
 import csv
 from datetime import date
 import discord, asyncio
@@ -218,10 +219,11 @@ class FunCommands(commands.Cog):
                 embed.set_footer(text=f"White to move || White time: {white_time}s")
             else:
                 embed.set_footer(text=f"Black to move || Black time: {black_time}s")
-            await channel.send(file=file, embed=embed)
+            msg = await channel.send(file=file, embed=embed)
             first_move = True
             while True:
                 try:
+                    start = time.time()
                     await self.client.wait_for('message', check=game_check, timeout=1)
                     if the_message.lower() == "board" or the_message.lower() == "show":
                         file = discord.File("board.png", filename="image.png")
@@ -236,8 +238,12 @@ class FunCommands(commands.Cog):
                             return await channel.send(f"Game PGN:\n```{game}```")
 
                         move = board.push_san(the_message)
-                        if board.turn:white_time+=increment
-                        else:black_time+=increment
+                        if board.turn:
+                            white_time -= time.time()-start
+                            white_time += increment
+                        else:
+                            black_time -= time.time()-start
+                            black_time += increment
 
                         if first_move:
                             node = game.add_variation(move)
@@ -262,10 +268,10 @@ class FunCommands(commands.Cog):
                         embed = discord.Embed(title=f"{white} (WHITE) vs {black} (BLACK)", color=discord.Colour.orange())
                         embed.set_image(url="attachment://image.png")
                         if board.turn:
-                            embed.set_footer(text=f"White to move || White time: {white_time}s")
+                            embed.set_footer(text=f"White to move || White time: {round(white_time) if white_time > 20 else round(white_time,2)}s")
                         else:
-                            embed.set_footer(text=f"Black to move || Black time: {black_time}s")
-                        await channel.send(file=file, embed=embed)
+                            embed.set_footer(text=f"Black to move || Black time: {round(black_time) if black_time > 20 else round(white_time,2)}s")
+                        msg = await channel.send(file=file, embed=embed)
 
                         if board.is_game_over():
                             the_result = board.result()
@@ -287,12 +293,18 @@ class FunCommands(commands.Cog):
                             await channel.send(embed=discord.Embed(title=f"{white} timeout, {black} wins!", color=discord.Color.red()))
                             game.headers["Result"] = "0-1" if board.turn else "1-0"
                             return await channel.send(f"Game PGN:\n```{game}```")
+                        else:
+                            embed.set_footer(text=f"White to move || White time: {round(white_time) if white_time > 20 else round(white_time,2)}s")
+                            await msg.edit(embed=embed)
                     else:
                         black_time-=1
                         if black_time == 0:
                             await channel.send(embed=discord.Embed(title=f"{black} timeout, {white} wins!", color=discord.Color.red()))
                             game.headers["Result"] = "0-1" if board.turn else "1-0"
                             return await channel.send(f"Game PGN:\n```{game}```")
+                        else:
+                            embed.set_footer(text=f"Black to move || Black time: {round(black_time) if black_time > 20 else round(white_time,2)}s")
+                            await msg.edit(embed=embed)
 
         except asyncio.TimeoutError:
             await channel.send(
