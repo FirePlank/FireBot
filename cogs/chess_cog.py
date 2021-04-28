@@ -15,6 +15,7 @@ class FunCommands(commands.Cog):
 
     @commands.command()
     async def chess_puzzle(self, ctx, min_rating: int, max_rating: int):
+        msg = await ctx.send("Searching for a suitable challenge...")
         candidates = []
         with open("cogs/chess_puzzles.csv", 'r') as file:
             reader = csv.reader(file)
@@ -23,7 +24,7 @@ class FunCommands(commands.Cog):
                     candidates.append(line)
 
         if len(candidates) == 0:
-            return await ctx.send("No results found! Please try to widen your rating range.")
+            return await msg.edit(content="No results found! Please try to widen your rating range.")
 
         puzzle = random.choice(candidates)
         board = chess.Board(fen=puzzle[1])
@@ -42,9 +43,10 @@ class FunCommands(commands.Cog):
         f.close()
         os.system("convert -density 200 board.svg board.png")
         file = discord.File("board.png", filename="image.png")
-        embed = discord.Embed(title=f"Chess Puzzle ({puzzle[3]})", color=discord.Colour.orange())
+        embed = discord.Embed(title=f"Chess Puzzle", color=discord.Colour.orange())
         embed.set_image(url="attachment://image.png")
-        embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move || Puzzle link: {puzzle[-1]}")
+        embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move || Puzzle rating: {puzzle[3]}")
+        await msg.delete()
         await ctx.send(file=file, embed=embed)
 
         def check(m):
@@ -58,6 +60,10 @@ class FunCommands(commands.Cog):
                 await self.client.wait_for('message', check=check, timeout=180)
                 if the_message.lower() == "exit" or the_message.lower() == "quit" or the_message.lower() == "resign" or the_message.lower() == "stop" or the_message.lower() == "cancel":
                     return await ctx.send(embed=discord.Embed(title=f"Puzzle Cancelled!", color=discord.Colour.red()))
+                elif the_message.lower() == "board" or the_message.lower() == "show":
+                    file = discord.File("board.png", filename="image.png")
+                    await ctx.send(file=file, embed=embed)
+                    continue
                 try:
                     copy_board = board.copy()
                     move = board.push_san(the_message)
@@ -103,7 +109,7 @@ class FunCommands(commands.Cog):
                         embed = discord.Embed(title=f"Correct!", color=discord.Colour.orange())
                         embed.set_image(url="attachment://image.png")
                         embed.set_footer(
-                            text=f"{'White' if board.turn else 'Black'} to move || Puzzle link: {puzzle[-1]}")
+                            text=f"{'White' if board.turn else 'Black'} to move || Puzzle rating: {puzzle[3]}")
                         await ctx.send(file=file, embed=embed)
 
                     else:
@@ -217,6 +223,10 @@ class FunCommands(commands.Cog):
             while True:
                 try:
                     await self.client.wait_for('message', check=game_check, timeout=1)
+                    if the_message.lower() == "board" or the_message.lower() == "show":
+                        file = discord.File("board.png", filename="image.png")
+                        await ctx.send(file=file, embed=embed)
+                        continue
                     try:
                         if the_message == "resign":
                             await channel.send(embed=discord.Embed(
