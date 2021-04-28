@@ -108,15 +108,15 @@ class FunCommands(commands.Cog):
 
                     else:
                         copy_board.push_uci(moves[counter])
-                        if board.is_check():
-                            boardsvg = chess.svg.board(board=board,
-                                                       orientation=chess.BLACK if board.turn else chess.WHITE,
-                                                       lastmove=board.move_stack[-1],
-                                                       check=board.king(True if board.turn else False))
+                        if copy_board.is_check():
+                            boardsvg = chess.svg.board(board=copy_board,
+                                                       orientation=chess.BLACK if copy_board.turn else chess.WHITE,
+                                                       lastmove=copy_board.move_stack[-1],
+                                                       check=copy_board.king(True if copy_board.turn else False))
                         else:
-                            boardsvg = chess.svg.board(board=board,
-                                                       orientation=chess.BLACK if board.turn else chess.WHITE,
-                                                       lastmove=board.move_stack[-1])
+                            boardsvg = chess.svg.board(board=copy_board,
+                                                       orientation=chess.BLACK if copy_board.turn else chess.WHITE,
+                                                       lastmove=copy_board.move_stack[-1])
                         f = open("board.svg", "w")
                         f.write(boardsvg)
                         f.close()
