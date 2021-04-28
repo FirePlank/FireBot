@@ -21,7 +21,7 @@ class FunCommands(commands.Cog):
         try:
             game_time = int(time_format[0])
             increment = int(time_format[2])
-            if len(time_format) != 3:
+            if len(time_format) != 3 or time_format[1] != "+":
                 return await ctx.send(
                 "Invalid time format specified. Please use this format `3+2` with the first number being the availabe minutes\nand the number after the + being the increment in seconds (It can be 0 for none).")
         except:
@@ -33,10 +33,9 @@ class FunCommands(commands.Cog):
         if user is None:
             embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange(),
                                   description=f"{the_author.mention} is inviting anyone to a chess battle with the time of {time_format[0]} minutes with {time_format[2]} second increment!\n\nType `accept` now to accept the challenge and begin a game with them.")
-            challenged = None
         elif user != the_author and not user.bot:
             embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange(),
-                                  description=f"{the_author.mention} is inviting {user.mention} to a chess battle!\n\nType `accept` now to accept the challenge and begin a game with them.")
+                                  description=f"{the_author.mention} is inviting {user.mention} to a chess battle with the time of {time_format[0]} minutes with {time_format[2]} second increment!\n\nType `accept` now to accept the challenge and begin a game with them.")
         else:
             embed = discord.Embed(title="You can't invite yourself or a discord bot to a chess battle!")
 
@@ -44,8 +43,8 @@ class FunCommands(commands.Cog):
 
         def check(m):
             global black, white
-            if not challenged:
-                if m.content.lower() == 'accept' and not m.author.bot and m.author != the_author and m.channel == channel:
+            if not user:
+                if m.content.lower() == 'accept' and not m.author.bot and m.channel == channel and m.author != the_author:
                     black = random.choice([m.author, the_author])
                     if the_author == black:
                         white = m.author
@@ -53,8 +52,12 @@ class FunCommands(commands.Cog):
                         white = the_author
                     return True
             else:
-                if m.content.lower() == 'accept' and not m.author.bot and m.author == challenged and m.channel == channel:
-                    black = m.author
+                if m.content.lower() == 'accept' and not m.author.bot and m.author == user and m.channel == channel:
+                    black = random.choice([m.author, the_author])
+                    if the_author == black:
+                        white = m.author
+                    else:
+                        white = the_author
                     return True
 
         def game_check(m):
@@ -65,6 +68,7 @@ class FunCommands(commands.Cog):
 
         try:
             await self.client.wait_for('message', check=check, timeout=60)
+            white_time, black_time = game_time * 60, game_time * 60
             board = chess.Board()
             game = chess.pgn.Game()
             game.headers["White"] = white.name
@@ -81,18 +85,14 @@ class FunCommands(commands.Cog):
             file = discord.File("board.png", filename="image.png")
             embed = discord.Embed(title=f"{white} (WHITE) vs {black} (BLACK)", color=discord.Colour.orange())
             embed.set_image(url="attachment://image.png")
-            embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
+            if board.turn:
+                embed.set_footer(text=f"White to move || White time: {white_time}s")
+            else:
+                embed.set_footer(text=f"Black to move || Black time: {black_time}s")
             await channel.send(file=file, embed=embed)
-            white_time, black_time = game_time*60
             first_move = True
             while True:
                 try:
-                    if time.time() - start > 60:
-                        await channel.send(
-                            embed=discord.Embed(title=f"Move timeout, {black if board.turn else white} wins!",
-                                                color=discord.Color.red()))
-                        game.headers["Result"] = "0-1" if board.turn else "1-0"
-                        return await channel.send(f"Game PGN:\n```{game}```")
                     await self.client.wait_for('message', check=game_check, timeout=1)
                     try:
                         if the_message == "resign":
@@ -138,8 +138,6 @@ class FunCommands(commands.Cog):
 
                             game.headers["Result"] = the_result
                             return await channel.send(f"Game PGN:\n```{game}```")
-
-                        start = time.time()
                     except:
                         await channel.send("Invalid move! Please try again.")
                 except asyncio.TimeoutError:
