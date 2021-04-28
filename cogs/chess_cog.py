@@ -31,7 +31,12 @@ class FunCommands(commands.Cog):
         moves = puzzle[2].split(" ")
         board.push_uci(moves[0])
 
-        boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
+        if board.is_check():
+            boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK,
+                                       lastmove=board.move_stack[-1],
+                                       check=board.king(True if board.turn else False))
+        else:
+            boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
         f = open("board.svg", "w")
         f.write(boardsvg)
         f.close()
@@ -51,12 +56,22 @@ class FunCommands(commands.Cog):
         while True:
             try:
                 await self.client.wait_for('message', check=check, timeout=180)
+                if the_message.lower() == ("exit"or"quit"or"resign"or"stop"):
+                    return await ctx.send(embed=discord.Embed(title=f"Puzzle Cancelled!", color=discord.Colour.red()))
                 try:
                     copy_board = board.copy()
                     move = board.push_san(the_message)
                     if move.uci() == moves[counter]:
                         if moves[counter] == moves[-1]:
-                            boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
+                            if board.is_check():
+                                boardsvg = chess.svg.board(board=board,
+                                                           orientation=chess.BLACK if board.turn else chess.WHITE,
+                                                           lastmove=board.move_stack[-1],
+                                                           check=board.king(True if board.turn else False))
+                            else:
+                                boardsvg = chess.svg.board(board=board,
+                                                           orientation=chess.BLACK if board.turn else chess.WHITE,
+                                                           lastmove=board.move_stack[-1])
                             f = open("board.svg", "w")
                             f.write(boardsvg)
                             f.close()
@@ -71,7 +86,15 @@ class FunCommands(commands.Cog):
                         counter+=1
                         board.push_uci(moves[counter])
                         counter+=1
-                        boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
+                        if board.is_check():
+                            boardsvg = chess.svg.board(board=board,
+                                                       orientation=chess.WHITE if board.turn else chess.BLACK,
+                                                       lastmove=board.move_stack[-1],
+                                                       check=board.king(True if board.turn else False))
+                        else:
+                            boardsvg = chess.svg.board(board=board,
+                                                       orientation=chess.WHITE if board.turn else chess.BLACK,
+                                                       lastmove=board.move_stack[-1])
                         f = open("board.svg", "w")
                         f.write(boardsvg)
                         f.close()
@@ -85,7 +108,15 @@ class FunCommands(commands.Cog):
 
                     else:
                         copy_board.push_uci(moves[counter])
-                        boardsvg = chess.svg.board(board=copy_board, orientation=chess.BLACK if copy_board.turn else chess.WHITE, lastmove=copy_board.move_stack[-1])
+                        if board.is_check():
+                            boardsvg = chess.svg.board(board=board,
+                                                       orientation=chess.BLACK if board.turn else chess.WHITE,
+                                                       lastmove=board.move_stack[-1],
+                                                       check=board.king(True if board.turn else False))
+                        else:
+                            boardsvg = chess.svg.board(board=board,
+                                                       orientation=chess.BLACK if board.turn else chess.WHITE,
+                                                       lastmove=board.move_stack[-1])
                         f = open("board.svg", "w")
                         f.write(boardsvg)
                         f.close()
@@ -204,8 +235,15 @@ class FunCommands(commands.Cog):
                         else:
                             node = node.add_variation(move)
 
-                        boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK,
-                                                   lastmove=board.move_stack[-1])
+                        if board.is_check():
+                            boardsvg = chess.svg.board(board=board,
+                                                       orientation=chess.WHITE if board.turn else chess.BLACK,
+                                                       lastmove=board.move_stack[-1],
+                                                       check=board.king(True if board.turn else False))
+                        else:
+                            boardsvg = chess.svg.board(board=board,
+                                                       orientation=chess.WHITE if board.turn else chess.BLACK,
+                                                       lastmove=board.move_stack[-1])
                         f = open("board.svg", "w")
                         f.write(boardsvg)
                         f.close()
