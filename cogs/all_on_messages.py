@@ -9,10 +9,6 @@ from datetime import datetime, timedelta
 from cogs.perspective import perspective
 import re
 import time
-import chess
-import chess.svg
-import chess.pgn
-from datetime import date
 from discord.ext import commands
 
 
@@ -293,117 +289,6 @@ class AdminCommands(commands.Cog):
                 await channel.send(f"{the_author.mention}, Bruh don't say a word two times in a row... Okay we are starting a new story, Let me start,\n\n{article}")
             elif message.content.lower() not in open("cogs/wordlist.txt", 'r').read().lower().splitlines():
                 await channel.send(f"{the_author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\n{article}")
-
-        elif channel.id == 836512663612686357:
-            if message.content.lower().startswith("challenge"):
-                if len(message.mentions) == 0:
-                    embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange(), description=f"{the_author.mention} is inviting anyone to a chess battle!\n\nType `accept` now to accept the challenge and begin a game with them.")
-                    challenged = None
-                elif message.mentions[0] != message.author and not message.mentions[0].bot:
-                    embed = discord.Embed(title="Chess Battle", color=discord.Colour.orange(), description=f"{the_author.mention} is inviting {message.mentions[0].mention} to a chess battle!\n\nType `accept` now to accept the challenge and begin a game with them.")
-                    challenged = message.mentions[0]
-                else:
-                    embed = discord.Embed(title="You can't invite yourself or a discord bot to a chess battle!")
-                await channel.send(embed=embed)
-
-                def check(m):
-                    global black, white
-                    if not challenged:
-                        if m.content.lower() == 'accept' and not m.author.bot and m.author != the_author and m.channel == channel:
-                            black = random.choice([m.author, message.author])
-                            if message.author == black:
-                                white = m.author
-                            else:
-                                white = message.author
-                            return True
-                    else:
-                        if m.content.lower() == 'accept' and not m.author.bot and m.author == challenged and m.channel == channel:
-                            black = m.author
-                            return True
-
-                def game_check(m):
-                    global the_message
-                    the_message = m.content
-                    if not message.author.bot and m.author == (white if board.turn else black) and m.channel == channel:
-                        return True
-
-                try:
-                    await self.client.wait_for('message', check=check, timeout=60)
-                    board = chess.Board()
-                    game = chess.pgn.Game()
-                    game.headers["White"] = white.name
-                    game.headers["Black"] = black.name
-                    game.headers["Site"] = "The Fire Army Discord Server"
-                    today = date.today()
-                    game.headers["Date"] = today.strftime("%Y.%m.%d")
-
-                    boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK)
-                    f = open("board.svg", "w")
-                    f.write(boardsvg)
-                    f.close()
-                    os.system("convert -density 200 board.svg board.png")
-                    file = discord.File("board.png", filename="image.png")
-                    embed = discord.Embed(title=f"{white} (WHITE) vs {black} (BLACK)", color=discord.Colour.orange())
-                    embed.set_image(url="attachment://image.png")
-                    embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
-                    await channel.send(file=file, embed=embed)
-                    start = time.time()
-                    first_move = True
-                    while True:
-                        try:
-                            if time.time()-start > 60:
-                                await channel.send(embed=discord.Embed(title=f"Move timeout, {black if board.turn else white} wins!",
-                                                                       color=discord.Color.red()))
-                                game.headers["Result"] = "0-1" if board.turn else "1-0"
-                                return await channel.send(f"Game PGN:\n```{game}```")
-                            await self.client.wait_for('message', check=game_check, timeout=60)
-                            try:
-                                if the_message == "resign":
-                                    await channel.send(embed=discord.Embed(
-                                        title=f"{white if board.turn else black} resigns! {black if board.turn else white} wins!",
-                                        color=discord.Color.red()))
-                                    game.headers["Result"] = "0-1" if board.turn else "1-0"
-                                    return await channel.send(f"Game PGN:\n```{game}```")
-
-                                move = board.push_san(the_message)
-                                if first_move:
-                                    node = game.add_variation(move)
-                                    first_move = False
-                                else:
-                                    node = node.add_variation(move)
-
-                                boardsvg = chess.svg.board(board=board, orientation=chess.WHITE if board.turn else chess.BLACK, lastmove=board.move_stack[-1])
-                                f = open("board.svg", "w")
-                                f.write(boardsvg)
-                                f.close()
-                                os.system("convert -density 200 board.svg board.png")
-                                file = discord.File("board.png", filename="image.png")
-                                embed = discord.Embed(title=f"{white} (WHITE) vs {black} (BLACK)", color=discord.Colour.orange())
-                                embed.set_image(url="attachment://image.png")
-                                embed.set_footer(text=f"{'White' if board.turn else 'Black'} to move")
-                                await channel.send(file=file, embed=embed)
-
-                                if board.is_game_over():
-                                    if board.result() == "1-0":
-                                        await channel.send(embed=discord.Embed(title=f"{white} wins!", color=discord.Color.green()))
-                                    elif board.result() == "0-1":
-                                        await channel.send(embed=discord.Embed(title=f"{black} wins!", color=discord.Color.green()))
-                                    else:
-                                        await channel.send(embed=discord.Embed(title=f"It's a draw!", color=discord.Color.orange()))
-
-                                    game.headers["Result"] = board.result()
-                                    return await channel.send(f"Game PGN:\n```{game}```")
-
-                                start = time.time()
-                            except:
-                                await channel.send("Invalid move! Please try again.")
-                        except asyncio.TimeoutError:
-                            await channel.send(embed=discord.Embed(title=f"Move timeout, {black if board.turn else white} wins!", color=discord.Color.green()))
-                            game.headers["Result"] = "0-1" if board.turn else "1-0"
-                            return await channel.send(f"Game PGN:\n```{game}```")
-
-                except asyncio.TimeoutError:
-                    await channel.send(embed=discord.Embed(title="Challenge timeout. Try again later...", color=discord.Color.red()))
 
         elif channel.id == 833267391944327198:
             if "```" in message.content:
