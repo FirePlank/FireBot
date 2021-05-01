@@ -33,7 +33,7 @@ class AdminCommands(commands.Cog):
                     if "Bump done" in embed.to_dict()['description']:
                         await self.client.pg_con.execute("UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time(), message.guild.id)
 
-                        amount = 50
+                        amount = 51
                         user_id = int(embed.to_dict()['description'][2:20])
 
                         result = await self.client.pg_con.fetchrow(
