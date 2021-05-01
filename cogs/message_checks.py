@@ -90,7 +90,7 @@ class AdminCommands(commands.Cog):
             if time.time()-boost_time > 7200:
                 guild = self.client.get_guild(int(row['guild_id']))
                 channel = guild.get_channel(836525964715884554)
-                await channel.send("<@&836601479665025025> it's time to boost the server! First one to do so gains 150 exp!")
+                await channel.send("<@&836601479665025025> it's time to boost the server! First one to do so gains 50 exp!")
                 await self.client.pg_con.execute(
                     "UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time()-6600, guild.id)
 
