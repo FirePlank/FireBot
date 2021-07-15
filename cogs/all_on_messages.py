@@ -264,7 +264,7 @@ class AdminCommands(commands.Cog):
 
         if channel.id == 865193494675324928 and discord.utils.find(lambda r: r.id == 845568298669178880, message.guild.roles) not in message.author.roles:
             await message.delete()
-            embed = discord.Embed(title=message.author, description=content)
+            embed = discord.Embed(title=str(message.author), description=content)
             await self.client.guilds[0].get_channel(865192931064807454).send(embed=embed)
             await message.author.add_roles(discord.utils.find(lambda r: r.id == 865192688085499914, message.guild.roles))
             return
