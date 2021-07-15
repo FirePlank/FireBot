@@ -30,47 +30,50 @@ class AdminCommands(commands.Cog):
         if channel.id == 836525964715884554:
             if message.author.id == 302050872383242240:
                 for embed in message.embeds:
-                    if "https://disboard.org/images/bot-command-image-bump.png" == embed.to_dict()['thumbnail']['url']:
-                        await self.client.pg_con.execute("UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time(), message.guild.id)
+                    try:
+                        if "https://disboard.org/images/bot-command-image-bump.png" == embed.to_dict()['image']['url']:
+                            await self.client.pg_con.execute("UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time(), message.guild.id)
 
-                        amount = 50
-                        user_id = int(embed.to_dict()['description'][2:20])
+                            amount = 50
+                            user_id = int(embed.to_dict()['description'][2:20])
 
-                        result = await self.client.pg_con.fetchrow(
-                            "SELECT * FROM levels WHERE guild_id = $1 and user_id = $2",
-                            message.guild.id, user_id)
-                        if result is None:
-                            experience_needed = 100
-                            level_at = 0
+                            result = await self.client.pg_con.fetchrow(
+                                "SELECT * FROM levels WHERE guild_id = $1 and user_id = $2",
+                                message.guild.id, user_id)
+                            if result is None:
+                                experience_needed = 100
+                                level_at = 0
 
-                            while amount >= experience_needed:
-                                level_at += 1
-                                amount -= experience_needed
+                                while amount >= experience_needed:
+                                    level_at += 1
+                                    amount -= experience_needed
 
-                            await self.client.pg_con.execute(
-                                "INSERT INTO levels(guild_id, user_id, exp, lvl, last_msg) VALUES($1,$2,$3,$4,$5)",
-                                message.guild.id, user_id,
-                                amount, level_at, time.time() - 60)
-                        else:
-                            level_at = int(result["lvl"])
-                            current_exp = int(result["exp"])
-                            experience_needed = math.floor(5 * (level_at ** 2) + 50 * level_at + 100)
-
-                            went = False
-                            while amount - (experience_needed - current_exp) > 0:
-                                level_at += 1
+                                await self.client.pg_con.execute(
+                                    "INSERT INTO levels(guild_id, user_id, exp, lvl, last_msg) VALUES($1,$2,$3,$4,$5)",
+                                    message.guild.id, user_id,
+                                    amount, level_at, time.time() - 60)
+                            else:
+                                level_at = int(result["lvl"])
+                                current_exp = int(result["exp"])
                                 experience_needed = math.floor(5 * (level_at ** 2) + 50 * level_at + 100)
-                                amount -= experience_needed - current_exp
-                                current_exp = 0
 
-                            if not went:
-                                amount += current_exp
+                                went = False
+                                while amount - (experience_needed - current_exp) > 0:
+                                    level_at += 1
+                                    experience_needed = math.floor(5 * (level_at ** 2) + 50 * level_at + 100)
+                                    amount -= experience_needed - current_exp
+                                    current_exp = 0
 
-                            await self.client.pg_con.execute(
-                                "UPDATE levels SET exp = $1, lvl = $2 WHERE guild_id = $3 and user_id = $4",
-                                abs(amount), level_at, message.guild.id, user_id)
+                                if not went:
+                                    amount += current_exp
 
-                        return await channel.send(f"Congratulations <@{user_id}> for getting a 50 exp bonus for boosting!")
+                                await self.client.pg_con.execute(
+                                    "UPDATE levels SET exp = $1, lvl = $2 WHERE guild_id = $3 and user_id = $4",
+                                    abs(amount), level_at, message.guild.id, user_id)
+
+                            return await channel.send(f"Congratulations <@{user_id}> for getting a 50 exp bonus for boosting!")
+                    except:
+                        return
 
         ################################################################################################################
         #                                           AUTO MODERATION
