@@ -30,7 +30,7 @@ class AdminCommands(commands.Cog):
         if channel.id == 836525964715884554:
             if message.author.id == 302050872383242240:
                 for embed in message.embeds:
-                    if "Bump done" in embed.to_dict()['description']:
+                    if "https://disboard.org/images/bot-command-image-bump.png" == embed.to_dict()['thumbnail']['url']:
                         await self.client.pg_con.execute("UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time(), message.guild.id)
 
                         amount = 50
@@ -285,7 +285,6 @@ class AdminCommands(commands.Cog):
                 await message.delete()
 
         elif channel.id == 833090029193658378:
-            article = random.choice(open("cogs/articles.txt").read().splitlines()).lower().capitalize()
             messages = await channel.history(limit=7).flatten()
             for message1 in messages:
                 if message1.author.bot and the_author.id == message1.mentions[0].id:
@@ -295,11 +294,11 @@ class AdminCommands(commands.Cog):
                     return
 
             if len(message.content.split(" ")) > 1:
-                await channel.send(f"{the_author.mention}, Bruh how hard is it to only type one word... Okay we are starting a new story, Let me start,\n\n{article}")
+                await channel.send(f"{the_author.mention}, Bruh how hard is it to only type one word... Okay we are starting a new story, Let me start,\n\nThe")
             elif messages[1].author == the_author:
-                await channel.send(f"{the_author.mention}, Bruh don't say a word two times in a row... Okay we are starting a new story, Let me start,\n\n{article}")
+                await channel.send(f"{the_author.mention}, Bruh don't say a word two times in a row... Okay we are starting a new story, Let me start,\n\nThe")
             elif message.content.lower() not in open("cogs/wordlist.txt", 'r').read().lower().splitlines():
-                await channel.send(f"{the_author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\n{article}")
+                await channel.send(f"{the_author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\nThe")
 
         elif channel.id == 833267391944327198:
             if "```" in message.content:
@@ -413,7 +412,10 @@ class AdminCommands(commands.Cog):
         ################################################################################################################
 
         else:
-            if message.content[:2] in ["f.", "p!"] or message.content[0] == ";": return
+            try:
+                if message.content[:2] in ["f.", "p!"] or message.content[0] == ";": return
+            except IndexError:
+                pass
             while True:
                 try:
                     result = await self.client.pg_con.fetchval(
