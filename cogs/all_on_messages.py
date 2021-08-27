@@ -279,29 +279,35 @@ class AdminCommands(commands.Cog):
         the_author = message.author
         channel = message.channel
         if channel.id == 833089755709308988:
-            messages = await channel.history(limit=2).flatten()
-
-            try:
-                if messages[1].author == the_author or int(message.content) != int(messages[1].content) + 1:
-                    await message.delete()
-            except:
+            if message.attachments or message.author.bot:
                 await message.delete()
+            else:
+                messages = await channel.history(limit=2).flatten()
+
+                try:
+                    if messages[1].author == the_author or int(message.content) != int(messages[1].content) + 1:
+                        await message.delete()
+                except:
+                    await message.delete()
 
         elif channel.id == 833090029193658378:
-            messages = await channel.history(limit=7).flatten()
-            for message1 in messages:
-                if message1.author.bot and the_author.id == message1.mentions[0].id:
-                    if ((message.created_at-message1.created_at).total_seconds()/3600)*60*60 > 180:
-                        break
-                    await message.delete()
-                    return
+            if message.attachments or message.author.bot:
+                await message.delete()
+            else:
+                messages = await channel.history(limit=7).flatten()
+                for message1 in messages:
+                    if message1.author.bot and the_author.id == message1.mentions[0].id:
+                        if ((message.created_at-message1.created_at).total_seconds()/3600)*60*60 > 180:
+                            break
+                        await message.delete()
+                        return
 
-            if len(message.content.split(" ")) > 1:
-                await channel.send(f"{the_author.mention}, Bruh how hard is it to only type one word... Okay we are starting a new story, Let me start,\n\nThe")
-            elif messages[1].author == the_author:
-                await channel.send(f"{the_author.mention}, Bruh don't say a word two times in a row... Okay we are starting a new story, Let me start,\n\nThe")
-            elif message.content.lower() not in open("cogs/wordlist.txt", 'r').read().lower().splitlines():
-                await channel.send(f"{the_author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\nThe")
+                if len(message.content.split(" ")) > 1:
+                    await channel.send(f"{the_author.mention}, Bruh how hard is it to only type one word... Okay we are starting a new story, Let me start,\n\nThe")
+                elif messages[1].author == the_author:
+                    await channel.send(f"{the_author.mention}, Bruh don't say a word two times in a row... Okay we are starting a new story, Let me start,\n\nThe")
+                elif message.content.lower() not in open("cogs/wordlist.txt", 'r').read().lower().splitlines():
+                    await channel.send(f"{the_author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\nThe")
 
         elif channel.id == 833267391944327198:
             if "```" in message.content:

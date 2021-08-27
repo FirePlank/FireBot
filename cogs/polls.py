@@ -22,7 +22,7 @@ class Helpful(commands.Cog):
             10: '🔟'
         }
 
-    @commands.command(aliases=["suggestion"])
+    @commands.command(aliases=["suggestion", "suggest"])
     async def poll(self, ctx, *, suggestion: str):
         await ctx.message.delete()
         embed = discord.Embed(description=suggestion)
