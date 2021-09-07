@@ -1,7 +1,6 @@
 import discord
 import os
 import asyncpg
-import jishaku
 from discord.ext import commands
 
 client = commands.Bot(command_prefix=['f.', 'F.'], case_insensitive=True, intents=discord.Intents.all())
@@ -42,7 +41,8 @@ If you want to report something before the cooldown is over or you made a report
     elif isinstance(error, commands.errors.CommandOnCooldown):
         await ctx.send(f"You need to wait {error.retry_after:,.2f} seconds before trying this command again.")
 
-    else: await ctx.send(error)
+    else:
+        await ctx.send(error)
 
 client.loop.run_until_complete(create_db_pool())
 client.run(os.environ["discord_token"])
