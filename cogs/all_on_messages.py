@@ -19,7 +19,7 @@ class AdminCommands(commands.Cog):
         self.perspective_obj = perspective.Perspective(os.environ["perspective_api_key"])
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if isinstance(message.channel, discord.channel.DMChannel): return
         channel = message.channel
 
@@ -35,7 +35,12 @@ class AdminCommands(commands.Cog):
                             await self.client.pg_con.execute("UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time(), message.guild.id)
 
                             amount = 50
-                            user_id = int(embed.to_dict()['description'][2:20])
+                            user_id = None
+                            async for msg in channel.history(limit=5):
+                                if msg.content == "!d bump" and not message.author.bot:
+                                    user_id = msg.author.id
+                                    break
+                            if user_id is None: break
 
                             result = await self.client.pg_con.fetchrow(
                                 "SELECT * FROM levels WHERE guild_id = $1 and user_id = $2",
@@ -277,7 +282,6 @@ class AdminCommands(commands.Cog):
         ################################################################################################################
 
         the_author = message.author
-        channel = message.channel
         if channel.id == 833089755709308988:
             if message.attachments or message.author.bot:
                 await message.delete()
@@ -487,17 +491,20 @@ class AdminCommands(commands.Cog):
                         exp_start - exp_end, guild_id, author_id)
 
                     if lvl_start + 1 == 5:
-                        await message.author.add_roles(discord.utils.get(message.author.guild.roles,
+                        await message.author.add_roles(discord.utils.get(message.guild.roles,
                                                                          id=749699380214366318))  ## TODO change these hardcoded roles to server specific
                     elif lvl_start + 1 == 10:
-                        await message.author.add_roles(discord.utils.get(message.author.guild.roles,
+                        await message.author.add_roles(discord.utils.get(message.guild.roles,
                                                                          id=741008881563467989))  ## TODO change these hardcoded roles to server specific
                     elif lvl_start + 1 == 20:
-                        await message.author.add_roles(discord.utils.get(message.author.guild.roles,
+                        await message.author.add_roles(discord.utils.get(message.guild.roles,
                                                                          id=741008953911017553))  ## TODO change these hardcoded roles to server specific
                     elif lvl_start + 1 == 30:
-                        await message.author.add_roles(discord.utils.get(message.author.guild.roles,
+                        await message.author.add_roles(discord.utils.get(message.guild.roles,
                                                                          id=752222222269284456))  ## TODO change these hardcoded roles to server specific
+                    elif lvl_start + 1 == 40:
+                        await message.author.add_roles(discord.utils.get(message.guild.roles,
+                                                                         id=890974960766562344))  ## TODO change these hardcoded roles to server specific
 
 def setup(client):
     client.add_cog(AdminCommands(client))
