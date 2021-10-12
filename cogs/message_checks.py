@@ -15,7 +15,7 @@ class AdminCommands(commands.Cog):
         author = message.author # Defines the message author
         content = message.content # Defines the message content
         channel = message.channel # Defines the message channel
-        if str(channel) == "logs": return
+        if str(channel) == "logs" or channel.id == 749525793759035414 or message.author.id == self.client.id: return
         logchannel = self.client.get_channel(741011181484900464) # Defines the logs channel
 
         embed = discord.Embed(colour=discord.Colour.purple())
@@ -28,7 +28,7 @@ class AdminCommands(commands.Cog):
     @commands.Cog.listener()
     async def on_bulk_message_delete(self, messages):
         channel = messages[0].channel  # Defines the message channel
-        if str(channel) == "logs": return
+        if str(channel) == "logs" or channel.id == 749525793759035414: return
         logchannel = self.client.get_channel(741011181484900464)  # Defines the logs channel
 
         embed = discord.Embed(colour=discord.Colour.dark_purple())
@@ -45,7 +45,7 @@ class AdminCommands(commands.Cog):
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
         channel = before.channel  # Defines the message channel
-        if str(channel) == "logs": return
+        if str(channel) == "logs" or channel.id == 749525793759035414 or after.author.id == self.client.id: return
         elif channel.id == 833089755709308988 or channel.id == 833090029193658378: await after.delete()
         author = before.author  # Defines the message author
         if author.bot: return
