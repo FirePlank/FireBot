@@ -35,13 +35,7 @@ class AdminCommands(commands.Cog):
                             await self.client.pg_con.execute("UPDATE misc SET boost_timer = $1 WHERE guild_id = $2", time.time(), message.guild.id)
 
                             amount = 50
-                            user_id = None
-                            async for msg in channel.history(limit=5):
-                                if msg.content == "!d bump" and not message.author.bot:
-                                    user_id = msg.author.id
-                                    break
-                            if user_id is None: break
-
+                            user_id = int(embed.to_dict()['description'][2:20])
                             result = await self.client.pg_con.fetchrow(
                                 "SELECT * FROM levels WHERE guild_id = $1 and user_id = $2",
                                 message.guild.id, user_id)
