@@ -82,9 +82,9 @@ class AdminCommands(commands.Cog):
         content = message.content
         staff_role = discord.utils.find(lambda r: r.name.upper() == 'STAFF', message.guild.roles)
 
-        if message.author.bot or str(channel) == "logs": return
+        if str(channel) == "logs": return
 
-        if staff_role not in message.author.roles:
+        if staff_role not in message.author.roles and not message.author.bot:
             start_time = time.time()
             muted_role = discord.utils.find(lambda r: r.name.upper() == 'MUTED', message.guild.roles)
 
