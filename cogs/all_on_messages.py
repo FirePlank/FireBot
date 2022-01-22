@@ -307,7 +307,7 @@ class AdminCommands(commands.Cog):
                 elif message.content.lower() not in open("cogs/wordlist.txt", 'r').read().lower().splitlines():
                     await channel.send(f"{the_author.mention}, I don't think that's a real word... Okay we are starting a new story, Let me start,\n\nThe")
 
-        elif channel.id == 833267391944327198:
+        elif channel.id == 833267391944327198 and the_author.id != 713789526077603850:
             if "```" in message.content:
                 messages = await channel.history(limit=2).flatten()
                 if messages[1].author == the_author:
