@@ -289,7 +289,7 @@ class AdminCommands(commands.Cog):
                     await message.delete()
 
         elif channel.id == 833090029193658378:
-            if message.attachments or message.author.bot:
+            if message.attachments or message.author.bot and the_author.id != 713789526077603850:
                 await message.delete()
             else:
                 messages = await channel.history(limit=7).flatten()
